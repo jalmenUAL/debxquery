@@ -1,0 +1,37 @@
+package debxquery.debxquery;
+
+import java.io.*;
+
+import debxquery.debxquery.BaseXClient.Query;
+
+/**
+ * This example shows how external variables can be bound to XQuery expressions.
+ *
+ * This example requires a running database server instance.
+ * Documentation: http://docs.basex.org/wiki/Clients
+ *
+ * @author BaseX Team 2005-19, BSD License
+ */
+public final class QueryBindExample {
+  /**
+   * Main method.
+   * @param args command-line arguments
+   * @throws IOException I/O exception
+   */
+  public static void main(final String... args) throws IOException {
+    // create session
+    try(BaseXClient session = new BaseXClient("localhost", 1984, "admin", "admin")) {
+      // create query instance
+      final String input = "declare variable $name external; " +
+          "for $i in 1 to 10 return element { $name } { $i }";
+
+      try(Query query = session.query(input)) {
+        // bind variable
+        query.bind("$name", "number", "");
+
+        // print result
+        System.out.print(query.execute());
+      }
+    }
+  }
+}
