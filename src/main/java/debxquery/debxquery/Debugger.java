@@ -327,12 +327,13 @@ public class Debugger {
 
 			 
 			try (Query query = session.query(input)) {		 
-				
-				while (query.more()) {
+				 
+				String option ="Y";
+				while (query.more() && option.equals("Y")) {
 					
-					String option = "Y";
+					
 					String next = query.next();		
-					explore(option,session,next); 
+					option = explore(session,next); 
 					 				 
 				}		 
 				System.out.println(query.info());
@@ -350,15 +351,16 @@ public class Debugger {
 	
 
 	
-	public static void explore(String option,BaseXClient session,String next)
+	public static String explore(BaseXClient session,String next)
 	{  
 		Scanner scanner = new Scanner(System. in);
-		String question = "let $x:=" + next + "return $x/sc/text()";
+		String question = "let $x:=" + next + "return $x/sc/node()";
 		System.out.print("Can be ");
 		Query qsc;
+		String option = "Y";
 		try {
 			qsc = session.query(question);
-			while(qsc.more() && option.equals("Y")) {
+			while(qsc.more()) {
 				System.out.println(qsc.next());}
 				String question2 = "let $x:=" + next + "return $x/values/node()";
 				System.out.print(" equal to ");
@@ -374,19 +376,24 @@ public class Debugger {
 		        	Query qch;
 		    		try {
 		    			qch = session.query(questionch);
-		    			while(qch.more()) {
+		    			String optionch ="Y";
+		    			while(qch.more() && optionch.equals("Y")) {
 		    				 String ch = qch.next();
-		    				 String optionch ="Y";
-		    				 explore(optionch,session,ch);
+		    				 optionch = explore(session,ch);
 		    				 
 		    			}
+		    			if (optionch.equals("Y")) {System.out.println("Error in "+qsc.next());}
+		    			
 		    		} catch (IOException e) {
 		    			e.printStackTrace();
 		    		}
-		        }
+		    		
+		    		return option;
+		        } else  return option;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return option;
 		
         
 		 
