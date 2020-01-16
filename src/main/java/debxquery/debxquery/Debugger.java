@@ -1,13 +1,57 @@
 package debxquery.debxquery;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Scanner;
 
 import debxquery.debxquery.BaseXClient.Query;
 
 public class Debugger {
+	
+	public static String load (String filename)
+	{
+	String fileAsString = "";
+	InputStream is;
+	try {
+		is = new FileInputStream(filename);
+	
+	BufferedReader buf = new BufferedReader(new InputStreamReader(is));
+	        
+	String line;
+	try {
+		line = buf.readLine();
+		StringBuilder sb = new StringBuilder();
+		
+		while(line != null){
+			   sb.append(line).append("\n");
+			   line = buf.readLine();
+			}
+		buf.close();	        
+		    fileAsString = sb.toString();
+			//System.out.println("Contents : " + fileAsString);
+			
+			
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	
+		
+	} catch (FileNotFoundException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	
+	return fileAsString;
+	}
 
+	 
 	public static void main(final String... args) throws IOException {
 
 		String b1store = "<bib>\r\n" + "    <book year=\"1994\">\r\n" + "        <title>TCP/IP Illustrated</title>\r\n"
@@ -249,41 +293,103 @@ public class Debugger {
 		// create session
 		try (BaseXClient session = new BaseXClient("localhost", 1984, "admin", "admin")) {
 
-			final InputStream b1st = new ByteArrayInputStream(b1store.getBytes());
+		    File initialFile2 = new File("mylist.xml");
+		    InputStream mylist = new FileInputStream(initialFile2);
+		    
+		    File initialFile3 = new File("bstore.xml");
+		    InputStream bstore = new FileInputStream(initialFile3);
+		    
+		    File initialFile4 = new File("prices.xml");
+		    InputStream pricesf = new FileInputStream(initialFile4);
+		    
+		    final InputStream b1st = new ByteArrayInputStream(b1store.getBytes());
 			final InputStream b2st = new ByteArrayInputStream(b2store.getBytes());
 			final InputStream bookt = new ByteArrayInputStream(books.getBytes());
 			final InputStream reportt = new ByteArrayInputStream(report.getBytes());
 			
-			 session.execute("drop db b1store");
-			 session.execute("drop db b2store");
-			 session.execute("drop db book");
-			 session.execute("drop db report");
+			session.execute("drop db mylist");
+			session.execute("drop db prices");
+			session.execute("drop db bstore");
+			session.execute("drop db bstore1");
+			session.execute("drop db bstore2");
+			session.execute("drop db book");
+			session.execute("drop db report");
 
-			session.create("b1store", b1st);
-			session.create("b2store", b2st);
+			session.create("mylist", mylist);
+			session.create("bstore", bstore);
+			session.create("prices", pricesf);
+			session.create("bstore1", b1st);
+			session.create("bstore2", b2st);
 			session.create("book", bookt);
 			session.create("report", reportt);
 
-			final String input = "xquery:parse('" + q14 + "')";
+			String input = load("ctree.xq");
 
-			String plan = "";
-			try (Query query = session.query(input)) {
-				// loop through all results
+			 
+			try (Query query = session.query(input)) {		 
+				
 				while (query.more()) {
-					String next = query.next();
-					plan = plan + next + "\r\n";
-				}
-
-				System.out.println(plan);
-				// print query info
+					
+					String option = "Y";
+					String next = query.next();		
+					explore(option,session,next); 
+					 				 
+				}		 
 				System.out.println(query.info());
 			}
 			
-			 session.execute("drop db b1store");
-			 session.execute("drop db b2store");
+			 session.execute("drop db bstore1");
+			 session.execute("drop db bstore2");
 			 session.execute("drop db book");
 			 session.execute("drop db report");
-
+			 session.execute("drop db mylist");
+			 session.execute("drop db bstore");
+			 session.execute("drop db prices");
 		}
+		}
+	
+
+	
+	public static void explore(String option,BaseXClient session,String next)
+	{  
+		Scanner scanner = new Scanner(System. in);
+		String question = "let $x:=" + next + "return $x/sc/text()";
+		System.out.print("Can be ");
+		Query qsc;
+		try {
+			qsc = session.query(question);
+			while(qsc.more() && option.equals("Y")) {
+				System.out.println(qsc.next());}
+				String question2 = "let $x:=" + next + "return $x/values/node()";
+				System.out.print(" equal to ");
+				Query qvalues = session.query(question2);
+				while(qvalues.more()) {
+				System.out.print(qvalues.next());}			
+				System.out.println("?");
+				System.out.println("Question (Y/N):");	
+				option  = scanner.nextLine();  
+		        if (option.equals("N")) {
+		        	
+		        	String questionch = "let $x:=" + next + "return $x/question";
+		        	Query qch;
+		    		try {
+		    			qch = session.query(questionch);
+		    			while(qch.more()) {
+		    				 String ch = qch.next();
+		    				 String optionch ="Y";
+		    				 explore(optionch,session,ch);
+		    				 
+		    			}
+		    		} catch (IOException e) {
+		    			e.printStackTrace();
+		    		}
+		        }
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+        
+		 
 	}
+	
 }
