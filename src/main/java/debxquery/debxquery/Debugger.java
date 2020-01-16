@@ -356,7 +356,7 @@ public class Debugger {
 	public static String explore(BaseXClient session,String next)
 	{  
 		Scanner scanner = new Scanner(System. in);
-		String question = "let $x:=" + next + "return $x/sc/node()";
+		String question = "let $x:=" + next + "return $x/(p|sf)/node()";
 		System.out.print("Can be ");
 		Query qsc;
 		String option = "Y";

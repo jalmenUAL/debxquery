@@ -998,7 +998,7 @@ declare function local:stcalls($trace,$static)
 };
 :)
 
- 
+(: 
 local:treecalls("
 declare function local:min($t)
 {
@@ -1058,5 +1058,161 @@ local:min_price($t)
 }
 </bib>          
    ")
+:)
+
+declare function local:treecalls($function,$string_query)
+{
+  let $query := xquery:parse($string_query)
+  let $trace :=
+  local:exps($query/QueryPlan/*[not(name(.)="StaticFunc")],
+  <context></context>,
+  $query/QueryPlan/*[name(.)="StaticFunc"])
+  let $static := $query/QueryPlan/*[name(.)="StaticFunc"]
+  return local:tcalls($function,<partial>{$trace/values}</partial>,
+  $static)
+};
+
+declare function local:tcalls($function,$trace,$static)
+{
+  if ($trace/epath)
+  then
+  let $epath := $trace/epath
+  let $values := if ($trace/../value/node()) then
+  fn:fold-right($trace/../value/node(),"",
+  function($x,$y) { if ($y="") then $x else ($x, "," ,$y)})
+  else data($trace/../value/@*)
+  return
+  if (not(name(($epath/*)[1])="Union") and
+      not(name(($epath/*)[1])="InterSect") and
+      not(name(($epath/*)[1])="FnNot") and
+      not(name(($epath/*)[1])="VarRef") and
+      not(name(($epath/*)[1])="Quantifier") and
+      not(substring(name(($epath/*)[1]),1,2)="Fn") and
+      not(name(($epath/*)[1])="CmpG") and
+      not(name(($epath/*)[1])="Arith") and
+      not(name(($epath/*)[1])="CmpN") and
+      not(name(($epath/*)[1])="And") and
+      not(name(($epath/*)[1])="Or") and
+      not(name(($epath/*)[1])="Empty") and
+      not(name(($epath/*)[1])="List")
+      and not (($epath/*)[1]/@type))
+
+  then
+  let $context := $epath/context
+
+  let $sc := local:showCall($epath,$static)
+  return
+      if (not($sc="()")) then
+      <question>
+      {if (name(($epath/*)[1])="StaticFuncCall") then <sf>{$sc}</sf> else <p>{$sc}</p>}
+      <values>{$values}</values>
+       {
+       $function(for-each($trace/values,
+       function($x){local:tcalls($function,$x,
+       $static)})) 
+       }
+
+      </question> 
+      else ()
+  else
+    $function(for-each($epath/*,
+    function($x){local:tcalls($function,$x,$static)}))
+  else
+  if ($trace/partial) then
+      $function(for-each($trace/partial,
+     function($x){local:tcalls($function,$x,$static)}))
+  else
+  if ($trace/values) then
+    $function(for-each($trace/values/partial,
+     function($x){local:tcalls($function,$x,$static)}))
+  else ()
+};
+
+declare function local:naive_strategy($query)
+{
+  local:treecalls(function($x){$x},$query)
+};
+
+declare function local:first_small_strategy($query)
+{
+  local:treecalls(function($x){for $ch in $x order by count($ch/values/node())
+ascending return $ch},$query)
+};
+
+declare function local:first_path_strategy($query)
+{
+  local:treecalls(function($x){($x[p],$x[not(p)])},$query)
+};
+
+declare function local:first_function_strategy($query)
+{
+  local:treecalls(function($x){($x[not(p)],$x[p])},$query)
+};
+
+declare function local:first_small_path_strategy($query)
+{
+  local:treecalls(function($x){(for $ch in $x where $ch[p] order by
+  count($ch/values/node()) ascending return $ch,for $ch in $x where $ch[not(p)] order by
+  count($ch/values/node()) ascending return $ch)},$query)
+};
 
 
+local:first_function_strategy("
+declare function local:min($t)
+{
+   let $prices := db:open('prices')
+   let $p := $prices//book[title = $t]/price
+   return min($p)
+};
+
+declare function local:store($t,$p)
+{
+   let $prices := db:open('prices')
+   let $p := $prices//book[title = $t and price=$p]
+   return $p/source
+};
+
+
+declare function local:min_price($t)
+{
+      let $min := local:min($t)
+      return
+      <minprice title='{$t}'>
+         {local:store($t,$min)}
+         <price>{local:min($t)}</price>
+      </minprice>
+};
+
+declare function local:rate($rates)
+{
+ let $n := count($rates)
+ return sum($rates) div $n
+};
+
+declare function local:data($t)
+{
+ for $b in db:open('bstore')//book[title=$t]
+ let $mr := local:rate($b/rate)
+ where  $mr > 0
+        return
+        if ($b[editor]) then ($b/editor,$b/publisher,<mrate>{$mr}</mrate>)
+        else
+          ($b/author[position()<=1],$b/publisher,<mrate>{$mr}</mrate>)
+};
+
+<bib>
+{
+
+let $mylist := db:open('mylist')
+for $t in distinct-values($mylist//title)
+let $d := local:data($t)
+where exists($d)
+return
+<book>{
+$d,
+local:min_price($t)
+}
+</book>
+}
+</bib>     
+   ")
