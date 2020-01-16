@@ -12,7 +12,7 @@ import java.util.Scanner;
 
 import debxquery.debxquery.BaseXClient.Query;
 
-public class Debugger {
+public class Debugger2 {
 	
 	public static String load (String filename)
 	{
@@ -362,7 +362,6 @@ public class Debugger {
 		String option = "Y";
 		try {
 			qsc = session.query(question);
-			
 			while(qsc.more()) {
 				System.out.println(qsc.next());}
 				String question2 = "let $x:=" + next + "return $x/values/node()";

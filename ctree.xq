@@ -789,14 +789,11 @@ declare function local:showCall($epath,$static)
              else
              if (count($nodes)=1) then [$nodes]
              else 
-             ["(",fold-left($nodes,
-             (),function($x,$y){if (empty($x)) then $y else ($x,",",$y)}),")"],   
-             (),function($x,$y){if (empty($x)) then $y else ($x,",",$y)})
+             ["(",fold-left($nodes,(),function($x,$y){if (empty($x)) then $y else ($x,",",$y)}),")"],(),function($x,$y){if (empty($x)) then $y else ($x,",",$y)})
              return 
              <fun>{data($step/@name)||"(",$args,")"}</fun>/node()
              else 
-             let $args := string-join(for $exp in $step/* return 
-             [local:showCall(<epath>{$exp,$context}</epath>,$static)],",")
+             let $args := string-join(for $exp in $step/* return [local:showCall(<epath>{$exp,$context}</epath>,$static)],",")
              return
              data($step/@name) || "(" || $args || ")"
                       
@@ -909,14 +906,13 @@ declare function local:tcalls($trace,$static)
   return
       if (not($sc="()")) then
       <question>{
-      ("Can be " , $sc , "equal to (" , $values , ")?") }
-       {
+      (<sc>{$sc}</sc>,
+      <values>{$values}</values>,    
        for-each($trace/values,
        function($x){local:tcalls($x,
-       $static)})  
-       }
-       
-      </question>  
+       $static)}))   
+      }
+      </question> 
       else ()
   else 
     for-each($epath/*,
@@ -932,6 +928,7 @@ declare function local:tcalls($trace,$static)
   else ()
 };
 
+(:
 declare function local:streecalls($string_query)
 {
   let $query := xquery:parse($string_query)
@@ -999,10 +996,10 @@ declare function local:stcalls($trace,$static)
      function($x){local:stcalls($x,$static)})
   else ()
 };
-
+:)
 
  
-local:streecalls("
+local:treecalls("
 declare function local:min($t)
 {
    let $prices := db:open('prices')
