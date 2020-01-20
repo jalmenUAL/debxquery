@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.Scanner;
 import javax.servlet.annotation.WebServlet;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.vaadin.aceeditor.AceEditor;
 import org.vaadin.aceeditor.AceMode;
@@ -27,6 +29,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
@@ -293,10 +297,23 @@ public class MyUI extends UI{
 		resulte.setShowPrintMargin(false);
 		resulte.setWordWrap(true);
 		
-		 
+		AceEditor resultd = new AceEditor();
+		resultd.setHeight("300px");
+		resultd.setWidth("100%");
+		resultd.setFontSize("12pt");
+		resultd.setMode(AceMode.xml);
+		resultd.setTheme(AceTheme.eclipse);
+		resultd.setUseWorker(true);
+		resultd.setReadOnly(false);
+		resultd.setShowInvisibles(false);
+		resultd.setShowGutter(false);
+		resultd.setUseSoftTabs(false);
+		resultd.setShowPrintMargin(false);
+		resultd.setWordWrap(true);
 		
 		edS.setContent(editor);
 		resP.setContent(resulte);
+		resP.setContent(resultd);
 		 
 
 		Button run_button = new Button("Execute Query");
@@ -372,6 +389,57 @@ public class MyUI extends UI{
 			@Override
 			public void buttonClick(ClickEvent event) {
 				 
+				try (BaseXClient session = new BaseXClient("localhost", 1984, "admin", "admin")) {
+					
+					session.execute("drop db bstore1");			
+					File initialFile = new File("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\bstore1.xml");
+					InputStream bstore1 = new FileInputStream(initialFile);
+					session.create("bstore1", bstore1);
+					
+					String ctree = Debugger.load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\ctree.xq");
+					
+					String result = "";
+					
+					try (Query query = session.query(ctree+"\n"
+					+"<root>{local:naive_strategy(\""+editor.getValue()+"\")}</root>")) {		 
+						while (query.more()) {							
+							String next = query.next();		
+							result = result + next + "\n";
+						}	
+						System.out.println(result);
+						DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+				        DocumentBuilder dBuilder;
+						try {
+							 dBuilder = dbFactory.newDocumentBuilder();
+							 Document doc;
+							 InputSource is = new InputSource(new StringReader(result));
+							 doc = dBuilder.parse(is);
+							 Element root = doc.getDocumentElement();
+							 
+							    String option ="N";
+							    
+							    Integer i=0;
+								while (i< root.getChildNodes().getLength() && option.equals("N")) {
+									
+									if (root.getChildNodes().item(i).getNodeType() == Node.ELEMENT_NODE)
+									{Element e = (Element) root.getChildNodes().item(i);
+									option = explore(e); 
+									}		
+									i++;
+								}		
+							 
+						
+							 
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}					
+					}
+					session.execute("drop db bstore1");
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}		
 				
 			}
 		});
@@ -389,7 +457,41 @@ public class MyUI extends UI{
 		this.setSizeFull();
 	}
 
-	 
+	
+	public static String explore(Element e)
+	{  
+		 
+		System.out.print("Can be ");
+		String option = "N";
+		NodeList q = e.getElementsByTagName("p");
+		if (q.getLength()>0) {System.out.print(((Element) q.item(0)).getTextContent());}
+		else {NodeList sf = e.getElementsByTagName("sf"); if (sf.getLength()>0) {System.out.print(((Element) sf.item(0)).getTextContent());}
+		}
+	    System.out.print(" equal to ");
+	    NodeList values = e.getElementsByTagName("values");
+	    for (int i=0; i < values.getLength();i++) {
+	    System.out.print(((Element)values.item(i)).getTextContent());
+	    }
+	    System.out.println("?");
+		System.out.println("Question (Y/N/A):");	
+		if (option.equals("N")) {
+		NodeList questions = e.getElementsByTagName("question");
+		Integer i=0;
+		String optionch ="N";
+		while (i< questions.getLength() && optionch.equals("N")) {
+			if (e.getChildNodes().item(i).getNodeType() == Node.ELEMENT_NODE)
+			{
+			Element ch = (Element) e.getChildNodes().item(i);
+			optionch = explore(ch); }
+			i++;
+		}	
+			
+		if (optionch.equals("Y")) {System.out.println("Error in "+q.item(0)); return option;}
+		}
+		
+		return option;
+		
+	}
 	
 
 	public void error(String type, String message) {

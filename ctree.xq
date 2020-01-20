@@ -1158,7 +1158,7 @@ declare function local:first_small_path_strategy($query)
   count($ch/values/node()) ascending return $ch)},$query)
 };
 
-
+(:
 local:first_biggest_strategy("
 declare function local:min($t)
 {
@@ -1218,4 +1218,4 @@ local:min_price($t)
 }
 </bib>     
    ")
-
+:)
