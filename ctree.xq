@@ -1103,13 +1103,15 @@ declare function local:tcalls($function,$trace,$static)
   let $sc := local:showCall($epath,$static)
   return
       if (not($sc="()")) then
-      <question>
+      let $chs :=  $function(for-each($trace/values,
+       function($x){local:tcalls($function,$x,
+       $static)}))
+       return
+      <question nc ="{count($chs)+sum($chs/@nc)}">
       {if (name(($epath/*)[1])="StaticFuncCall") then <sf>{$sc}</sf> else <p>{$sc}</p>}
       <values>{$values}</values>
        {
-       $function(for-each($trace/values,
-       function($x){local:tcalls($function,$x,
-       $static)})) 
+       $chs
        }
 
       </question> 
@@ -1144,9 +1146,9 @@ declare function local:first_path_strategy($query)
   local:treecalls(function($x){($x[p],$x[not(p)])},$query)
 };
 
-declare function local:first_function_strategy($query)
+declare function local:first_biggest_strategy($query)
 {
-  local:treecalls(function($x){($x[not(p)],$x[p])},$query)
+  local:treecalls(function($x){for $ch in $x order by $ch/@nc descending return $ch  },$query)
 };
 
 declare function local:first_small_path_strategy($query)
@@ -1157,7 +1159,7 @@ declare function local:first_small_path_strategy($query)
 };
 
 
-local:first_function_strategy("
+local:first_biggest_strategy("
 declare function local:min($t)
 {
    let $prices := db:open('prices')
@@ -1216,3 +1218,4 @@ local:min_price($t)
 }
 </bib>     
    ")
+

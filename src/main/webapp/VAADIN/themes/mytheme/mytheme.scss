@@ -29,10 +29,33 @@
 // For more information, see: https://vaadin.com/book/-/page/themes.valo.html
 // Example variants can be copy/pasted from https://vaadin.com/docs/v8/framework/articles/ValoExamples.html
 
+
+
 @import "../valo/valo.scss";
 
 @mixin mytheme {
   @include valo;
 
   // Insert your own theme rules here
+  
+  .row .v-tree8-row
+  {
+   font-size: 20px;
+   border: red solid 1px;
+  }
+  .leaf .v-tree8-cell-content {
+    color:blue
+  }
+  
+  .v-tabsheet-tabitemcell-foo{
+     .v-captiontext {
+       font-weight: bold;
+       color: red;
+     }
+   }
+   .v-caption-multi-line-caption {
+  .v-captiontext {
+    white-space: pre-wrap;
+  }
+}
 }

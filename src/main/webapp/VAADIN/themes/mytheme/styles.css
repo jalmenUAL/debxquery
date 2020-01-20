@@ -1077,7 +1077,7 @@
  */
 
 .v-vaadin-version:after {
-	content: "8.8.6";
+	content: "8.7.0";
 }
 
 .v-widget {
@@ -6277,12 +6277,7 @@ div.v-layout.v-horizontal.v-widget {
 
 .mytheme .v-datefield-popup td.v-datefield-calendarpanel-month {
 	width: 148px;
-	cursor: default;
 	color: #197de1;
-}
-
-.mytheme .v-datefield-popup td.v-datefield-calendarpanel-month.header-month-year {
-	cursor: pointer;
 }
 
 .mytheme .v-datefield-popup .v-datefield-calendarpanel-year td.v-datefield-calendarpanel-month {
@@ -6467,12 +6462,7 @@ div.v-layout.v-horizontal.v-widget {
 
 .mytheme td.v-datefield-calendarpanel-month {
 	width: 148px;
-	cursor: default;
 	color: #197de1;
-}
-
-.mytheme td.v-datefield-calendarpanel-month.header-month-year {
-	cursor: pointer;
 }
 
 .mytheme .v-datefield-calendarpanel-year td.v-datefield-calendarpanel-month {
@@ -7127,12 +7117,7 @@ div.v-layout.v-horizontal.v-widget {
 
 .mytheme td.v-inline-datefield-calendarpanel-month {
 	width: 148px;
-	cursor: default;
 	color: #197de1;
-}
-
-.mytheme td.v-inline-datefield-calendarpanel-month.header-month-year {
-	cursor: pointer;
 }
 
 .mytheme .v-inline-datefield-calendarpanel-year td.v-inline-datefield-calendarpanel-month {
@@ -15217,4 +15202,22 @@ div.v-layout.v-horizontal.v-widget {
 	display: inline-block;
 	width: 19px;
 	overflow: hidden;
+}
+
+.mytheme .row .v-tree8-row {
+	font-size: 20px;
+	border: red solid 1px;
+}
+
+.mytheme .leaf .v-tree8-cell-content {
+	color: blue;
+}
+
+.mytheme .v-tabsheet-tabitemcell-foo .v-captiontext {
+	font-weight: bold;
+	color: red;
+}
+
+.mytheme .v-caption-multi-line-caption .v-captiontext {
+	white-space: pre-wrap;
 }
