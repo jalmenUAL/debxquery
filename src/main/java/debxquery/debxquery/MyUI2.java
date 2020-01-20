@@ -87,7 +87,7 @@ import debxquery.debxquery.BaseXClient.Query;
  * initialize non-component functionality.
  */
 @Theme("mytheme")
-public class MyUI extends UI{
+public class MyUI2 extends UI{
 	
 	 
 	
@@ -473,21 +473,21 @@ public class MyUI extends UI{
 						DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 				        DocumentBuilder dBuilder;
 						try {
-							 /*dBuilder = dbFactory.newDocumentBuilder();
+							 dBuilder = dbFactory.newDocumentBuilder();
 							 Document doc;
 							 InputSource is = new InputSource(new StringReader(result));
 							 doc = dBuilder.parse(is);
-							 Element root = doc.getDocumentElement();*/
+							 Element root = doc.getDocumentElement();
 							 
 							    String option ="N";
-							    List<Label> roots = data.getRootItems();
-							    Label root = roots.get(0);
+							    
 							    Integer i=0;
-								while (i< data.getChildren(root).size() && option.equals("N")) {
+								while (i< root.getChildNodes().getLength() && option.equals("N")) {
 									
-									Label e = data.getChildren(root).get(i);
-									option = explore(data,e); 
-											
+									if (root.getChildNodes().item(i).getNodeType() == Node.ELEMENT_NODE)
+									{Element e = (Element) root.getChildNodes().item(i);
+									option = explore(e); 
+									}		
 									i++;
 								}		
 							 
@@ -521,21 +521,24 @@ public class MyUI extends UI{
 	}
 
 	
-	public static String explore(TreeData<Label> data,Label e)
+	public static String explore(Element e)
 	{  
 		 
 		System.out.print("Can be ");
-		String option = "N";		 
-		System.out.print(e.getValue()); 
+		String option = "N";
+		NodeList q = e.getElementsByTagName("p");
+		if (q.getLength()>0) {System.out.print(((Element) q.item(0)).getTextContent());}
+		else {NodeList sf = e.getElementsByTagName("sf"); if (sf.getLength()>0) {System.out.print(((Element) sf.item(0)).getTextContent());}
+		}
 	    System.out.print(" equal to ");
-	    List<Label> values = data.getChildren(e);
-	    for (int i=0; i < values.size();i++) {
-	    System.out.print(values.get(i).getValue());
+	    NodeList values = e.getElementsByTagName("values");
+	    for (int i=0; i < values.getLength();i++) {
+	    System.out.print(((Element)values.item(i)).getTextContent());
 	    }
 	    System.out.println("?");
 		System.out.println("Question (Y/N/A):");	
 		if (option.equals("N")) {
-		/*NodeList questions = e.getElementsByTagName("question");
+		NodeList questions = e.getElementsByTagName("question");
 		Integer i=0;
 		String optionch ="N";
 		while (i< questions.getLength() && optionch.equals("N")) {
@@ -547,7 +550,6 @@ public class MyUI extends UI{
 		}	
 			
 		if (optionch.equals("Y")) {System.out.println("Error in "+q.item(0)); return option;}
-		*/
 		}
 		
 		return option;
@@ -563,7 +565,7 @@ public class MyUI extends UI{
 	}
 
 	@WebServlet(urlPatterns = "/*", name = "MyUIServlet", asyncSupported = true)
-	@VaadinServletConfiguration(ui = MyUI.class, productionMode = false)
+	@VaadinServletConfiguration(ui = MyUI2.class, productionMode = false)
 	public static class MyUIServlet extends VaadinServlet {
 	}
 }
