@@ -34,6 +34,7 @@ import org.xml.sax.SAXException;
 
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
+import com.vaadin.data.HasValue.ValueChangeListener;
 import com.vaadin.data.TreeData;
 import com.vaadin.data.provider.TreeDataProvider;
 import com.vaadin.icons.VaadinIcons;
@@ -50,12 +51,14 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
+import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Image;
 import com.vaadin.ui.ItemCaptionGenerator;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Panel;
+import com.vaadin.ui.RadioButtonGroup;
 import com.vaadin.ui.RichTextArea;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
@@ -89,7 +92,9 @@ import debxquery.debxquery.BaseXClient.Query;
 @Theme("mytheme")
 public class MyUI extends UI{
 	
-	 
+	String option ="Yes";
+	final Window window = new Window("Debug Tree");
+    
 	
 	ComboBox<String> queries = new ComboBox<String>("Examples of Queries");
 	
@@ -149,6 +154,7 @@ public class MyUI extends UI{
 	{
 		Tree<Label> tree = new Tree<Label>();
 		TreeData<Label> data = new TreeData<>();
+		 
 		
 		try {
 	         
@@ -195,23 +201,27 @@ public class MyUI extends UI{
 	public static void addChildrenToTree(TreeData<Label> data, NodeList children, Label parent) {
 	    if (children.getLength() > 0) {
 	        for (int i = 0; i < children.getLength(); i++) {    	
-	            Node node = children.item(i);   
-	            if (node.getNodeType() == Node.TEXT_NODE)
-	            {
-	            	Text childElement = (Text) node;
-	            	String child = childElement.getTextContent();
-	            	Label childE = new Label(child);        	    
-	        	    data.addItem(parent,childE);
-	            }
-	            else
-	            if (node.getNodeType() == Node.ELEMENT_NODE) {
-	            	
-	        	    Element childElement = (Element) node;
-	        	    String child = childElement.getTagName();        	    
-	        	    Label childE = new Label(child); 
-	        	    data.addItem(parent,childE);
+	        	
+	        	
+	        	
+	            Node node = children.item(i);       
+	            
+	           
+	            
+	            if (node.getNodeType() == Node.ELEMENT_NODE) { 	
+	        	    Element Element = (Element) node;
+	        	    String tag = Element.getTagName();   
+	        	    String text = Element.getTextContent();
+	        	    Label tagl = null;
+	        	    if (tag.equals("p") || tag.equals("sf")) {tagl = new Label("Can you confirm");}
+	        	    else if (tag.equals("values") ) {tagl = new Label("equal to");}
+	        	    else tagl= new Label(tag);
+	        	    data.addItem(parent,tagl);
+	        	    Label textl = new Label(text);	        	   
+	        	    if (!tag.equals("root") && !tag.equals("question")  
+	        	    		) {data.addItem(tagl,textl);}
 	        	    if (node.hasChildNodes()) {
-		            addChildrenToTree(data, node.getChildNodes(), childE);}
+		            addChildrenToTree(data, node.getChildNodes(),tagl);}
 	        	  }             
 	            }	        
 	    }
@@ -221,6 +231,9 @@ public class MyUI extends UI{
 
 	@Override
 	protected void init(VaadinRequest vaadinRequest) {
+		
+		window.setWidth("100%");
+	    window.setHeight("100%");
 		 
 		final VerticalLayout main = new VerticalLayout();
 		main.setMargin(false);
@@ -446,13 +459,7 @@ public class MyUI extends UI{
 					
 					String ctree = Debugger.load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\ctree.xq");
 					
-					final Window window = new Window("Debug Tree");
-			        window.setWidth("100%");
-			        window.setHeight("100%");
-			        final VerticalLayout content = new VerticalLayout();
-			        content.setWidth("100%");
-			        content.setHeight("-1");
-			        content.setMargin(true);
+					
 			        
 					
 					String result = "";
@@ -466,9 +473,23 @@ public class MyUI extends UI{
 						System.out.println(result);
 						Tree<Label> tree = XMLtotree(result);
 						TreeData<Label> data = tree.getTreeData();
-						content.addComponent(tree);
-						window.setContent(content);
-						addWindow(window);
+						
+						tree.addItemClickListener(event2 ->
+						{
+						final Window windowq = new Window("Answer to Question");
+				        windowq.setWidth("300px");
+				        windowq.setHeight("150px");
+				        FormLayout query_answer = new FormLayout();
+				        RadioButtonGroup<String> single =
+				        	    new RadioButtonGroup<>("Please Select");
+				        	single.setItems("Yes", "No", "Abort");
+				        single.addValueChangeListener(event3 -> {option = event3.getValue();removeWindow(windowq);});
+				        query_answer.addComponent(single);
+				        windowq.setContent(query_answer);
+				        addWindow(windowq);
+						}
+
+					    );
 						
 						DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 				        DocumentBuilder dBuilder;
@@ -478,19 +499,31 @@ public class MyUI extends UI{
 							 InputSource is = new InputSource(new StringReader(result));
 							 doc = dBuilder.parse(is);
 							 Element root = doc.getDocumentElement();*/
-							 
-							    String option ="N";
+							    
+							    
 							    List<Label> roots = data.getRootItems();
 							    Label root = roots.get(0);
+							    tree.expand(root);
 							    Integer i=0;
-								while (i< data.getChildren(root).size() && option.equals("N")) {
+							    
+							    final VerticalLayout content = new VerticalLayout();
+							    content.setWidth("100%");
+						        content.setHeight("-1");
+						        content.setMargin(true);
+								content.addComponent(tree);
+								window.setContent(content);
+								addWindow(window);
+							    option="Yes";
+								while (i< data.getChildren(root).size() && option.equals("Yes")) {
 									
-									Label e = data.getChildren(root).get(i);
-									option = explore(data,e); 
-											
+									
+									Label question = data.getChildren(root).get(i);
+									tree.expand(question);
+								    explore(tree,question); 
+								    System.out.println(option);	
 									i++;
 								}		
-							 
+							    //removeWindow(window);
 						
 							 
 						} catch (Exception e) {
@@ -521,21 +554,28 @@ public class MyUI extends UI{
 	}
 
 	
-	public static String explore(TreeData<Label> data,Label e)
+	public  void explore(Tree tree,Label question)
 	{  
 		 
-		System.out.print("Can be ");
-		String option = "N";		 
-		System.out.print(e.getValue()); 
+				
+		List<Label> chq = tree.getTreeData().getChildren(question); 
+		
+       
+        
+		tree.select(question);
+		tree.expand(chq.get(0));
+		tree.expand(chq.get(1));
+
+		
+		
+	    
+		/*System.out.print(chq.get(0).getValue()); 
 	    System.out.print(" equal to ");
-	    List<Label> values = data.getChildren(e);
-	    for (int i=0; i < values.size();i++) {
-	    System.out.print(values.get(i).getValue());
-	    }
+	    System.out.print(chq.get(1).getValue()); 
 	    System.out.println("?");
-		System.out.println("Question (Y/N/A):");	
-		if (option.equals("N")) {
-		/*NodeList questions = e.getElementsByTagName("question");
+		System.out.println("Question (Y/N/A):");*/	
+		/*if (option.equals("N")) {
+		NodeList questions = e.getElementsByTagName("question");
 		Integer i=0;
 		String optionch ="N";
 		while (i< questions.getLength() && optionch.equals("N")) {
@@ -547,10 +587,10 @@ public class MyUI extends UI{
 		}	
 			
 		if (optionch.equals("Y")) {System.out.println("Error in "+q.item(0)); return option;}
-		*/
-		}
 		
-		return option;
+		}*/
+		
+		 
 		
 	}
 	
