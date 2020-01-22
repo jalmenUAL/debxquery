@@ -90,7 +90,7 @@ import debxquery.debxquery.BaseXClient.Query;
  * initialize non-component functionality.
  */
 @Theme("mytheme")
-public class MyUI extends UI{
+public class MyUI3 extends UI{
 	
 	String option ="Yes";
 	final Window window = new Window("Debug Tree");
@@ -105,14 +105,56 @@ public class MyUI extends UI{
 		}
 	}
 	
-	public  TreeGrid<NodeTree> XMLtotree(String xml)
+	public static Tree<Label> Filetotree(String file)
 	{
-		TreeGrid<NodeTree> treeGrid = new TreeGrid<>();
-        treeGrid.addColumn(NodeTree::getTag).setCaption("Tag").setId("name-column");
-        treeGrid.addColumn(NodeTree::getValue).setCaption("Value");
-        treeGrid.addColumn(NodeTree::getSelection).setCaption("Please Select");
- 
-         
+		Tree<Label> tree = new Tree<Label>();
+		TreeData<Label> data = new TreeData<>();
+		
+		try {
+	        File fXmlFile = new File(file);
+	        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+	        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+	        Document doc = dBuilder.parse(fXmlFile);
+
+	        Element root = doc.getDocumentElement();
+	        String rootItem = root.getNodeName();
+	        Label rootE = new Label(rootItem);
+	        data.addItem(null,rootE);
+	        
+	        addChildrenToTree(data, root.getChildNodes(), rootE);
+	    } catch (Exception e) { }
+	    
+	    
+	    tree.setDataProvider(new TreeDataProvider<>(data));
+		
+		tree.setItemCaptionGenerator(new ItemCaptionGenerator<Label>() {
+			private static final long serialVersionUID = -1913286695570843896L;
+
+			 
+			@Override
+			public String apply(Label item) {
+				// TODO Auto-generated method stub
+				
+				return item.getValue();
+			}
+		});
+		
+		tree.setStyleGenerator(item -> {
+			 
+	        if (!tree.getDataProvider().hasChildren(item))
+	            return "leaf";
+	        return "row";
+	        
+	    }
+	   );
+	return tree;
+	};
+	
+	public static Tree<Label> XMLtotree(String xml)
+	{
+		Tree<Label> tree = new Tree<Label>();
+		TreeData<Label> data = new TreeData<>();
+		 
 		
 		try {
 	         
@@ -120,39 +162,70 @@ public class MyUI extends UI{
 	        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 	        InputSource is = new InputSource(new StringReader(xml));
 			Document doc = dBuilder.parse(is);
-	        Element root = doc.getDocumentElement();       
-	        List<NodeTree> listch = addChildrenToTree(root.getChildNodes());
-	        treeGrid.setItems(listch);
+	        
+
+	        Element root = doc.getDocumentElement();
+	        String rootItem = root.getNodeName();
+	        Label rootE = new Label(rootItem);
+	        data.addItem(null,rootE);
+	        
+	        addChildrenToTree(data, root.getChildNodes(), rootE);
 	    } catch (Exception e) { }
-	   
-	return treeGrid;
+	    
+	    
+	    tree.setDataProvider(new TreeDataProvider<>(data));
+		
+		tree.setItemCaptionGenerator(new ItemCaptionGenerator<Label>() {
+			private static final long serialVersionUID = -1913286695570843896L;
+
+			 
+			@Override
+			public String apply(Label item) {
+				// TODO Auto-generated method stub
+				
+				return item.getValue();
+			}
+		});
+		
+		tree.setStyleGenerator(item -> {
+			 
+	        if (!tree.getDataProvider().hasChildren(item))
+	            return "leaf";
+	        return "row";
+	        
+	    }
+	   );
+	return tree;
 	};
 	
-	public  List<NodeTree>  addChildrenToTree(NodeList children) {
-		
-		
-		List<NodeTree> l = new ArrayList<NodeTree>();
-	    if (children.getLength() > 0) {  	
-	        for (int i = 0; i < children.getLength(); i++) {    	     	
+	public static void addChildrenToTree(TreeData<Label> data, NodeList children, Label parent) {
+	    if (children.getLength() > 0) {
+	        for (int i = 0; i < children.getLength(); i++) {    	
+	        	
+	        	
+	        	
 	            Node node = children.item(i);       
+	            
+	           
+	            
 	            if (node.getNodeType() == Node.ELEMENT_NODE) { 	
 	        	    Element Element = (Element) node;
 	        	    String tag = Element.getTagName();   
 	        	    String text = Element.getTextContent();
-	        	    NodeTree sfp = new NodeTree(tag,text);
-	        	   
-	        	    //if (node.hasChildNodes()) {
-	        	    List<NodeTree> listch =addChildrenToTree(node.getChildNodes());
-	        	    sfp.setSubNodes(listch);
+	        	    Label tagl = null;
+	        	    if (tag.equals("p") || tag.equals("sf")) {tagl = new Label("Can you confirm");}
+	        	    else if (tag.equals("values") ) {tagl = new Label("equal to");}
+	        	    else tagl= new Label(tag);
 	        	    
-	        	    //}
-	        	    l.add(sfp);
-	        	    
-	        	  }        
-	            }  	        
-	    }   
-		return l;
-	   
+	        	    data.addItem(parent,tagl);
+	        	    Label textl = new Label(text);	        	   
+	        	    if (!tag.equals("root") && !tag.equals("question")  
+	        	    		) {data.addItem(tagl,textl);}
+	        	    if (node.hasChildNodes()) {
+		            addChildrenToTree(data, node.getChildNodes(),tagl);}
+	        	  }             
+	            }	        
+	    }
 	}
 	
 	
@@ -197,7 +270,7 @@ public class MyUI extends UI{
 		String db = Debugger.load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\bstore1.xml");
 		resultt.setValue(db);
 	    
-		
+		/*
 		tabsheet.addTab(new Label("XML Documents"),"+");
 		tabsheet.addSelectedTabChangeListener(new SelectedTabChangeListener() {
 	    @Override
@@ -232,7 +305,7 @@ public class MyUI extends UI{
 			                tabsheet.setSelectedTab(tab);		       		
 			               }
 			       }}});
-	    
+	    */
 		
 	    queries.setItems("Example1",
 				"Example2",
@@ -399,21 +472,39 @@ public class MyUI extends UI{
 							result = result + next + "\n";
 						}	
 						System.out.println(result);
-						TreeGrid<NodeTree> tree = XMLtotree(result);
-						 
-					 
-						 
+						Tree<Label> tree = XMLtotree(result);
+						TreeData<Label> data = tree.getTreeData();
 						
+						tree.addItemClickListener(event2 ->
+						{
+						final Window windowq = new Window("Answer to Question");
+				        windowq.setWidth("300px");
+				        windowq.setHeight("150px");
+				        FormLayout query_answer = new FormLayout();
+				        RadioButtonGroup<String> single =
+				        	    new RadioButtonGroup<>("Please Select");
+				        	single.setItems("Yes", "No", "Abort");
+				        single.addValueChangeListener(event3 -> {option = event3.getValue();removeWindow(windowq);});
+				        query_answer.addComponent(single);
+				        windowq.setContent(query_answer);
+				        addWindow(windowq);
+						}
 
-					    
+					    );
 						
 						DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 				        DocumentBuilder dBuilder;
 						try {
-							 
+							 /*dBuilder = dbFactory.newDocumentBuilder();
+							 Document doc;
+							 InputSource is = new InputSource(new StringReader(result));
+							 doc = dBuilder.parse(is);
+							 Element root = doc.getDocumentElement();*/
 							    
 							    
-							    
+							    List<Label> roots = data.getRootItems();
+							    Label root = roots.get(0);
+							    tree.expand(root);
 							    Integer i=0;
 							    
 							    final VerticalLayout content = new VerticalLayout();
@@ -421,11 +512,8 @@ public class MyUI extends UI{
 						        content.setHeight("-1");
 						        content.setMargin(true);
 								content.addComponent(tree);
-								tree.setWidth("100%");
-								tree.setHeight("100%");
 								window.setContent(content);
 								addWindow(window);
-								/*
 							    option="Yes";
 								while (i< data.getChildren(root).size() && option.equals("Yes")) {
 									
@@ -435,8 +523,7 @@ public class MyUI extends UI{
 								    explore(tree,question); 
 								    System.out.println(option);	
 									i++;
-								}
-								*/		
+								}		
 							    //removeWindow(window);
 						
 							 
@@ -517,7 +604,7 @@ public class MyUI extends UI{
 	}
 
 	@WebServlet(urlPatterns = "/*", name = "MyUIServlet", asyncSupported = true)
-	@VaadinServletConfiguration(ui = MyUI.class, productionMode = false)
+	@VaadinServletConfiguration(ui = MyUI3.class, productionMode = false)
 	public static class MyUIServlet extends VaadinServlet {
 	}
 }

@@ -1159,11 +1159,11 @@ declare function local:first_small_path_strategy($query)
 };
 
 (:
-local:first_biggest_strategy("
+local:first_small_strategy("
 declare function local:min($t)
 {
    let $prices := db:open('prices')
-   let $p := $prices//book[title = $t]/price
+   let $p := $prices//book[title = $t]/mierda
    return min($p)
 };
 
@@ -1188,7 +1188,7 @@ declare function local:min_price($t)
 declare function local:rate($rates)
 {
  let $n := count($rates)
- return sum($rates) div $n
+ return sum($rates)div $n
 };
 
 declare function local:data($t)
