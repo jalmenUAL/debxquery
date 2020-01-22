@@ -13,6 +13,7 @@ import java.io.StringReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -53,6 +54,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.IconGenerator;
 import com.vaadin.ui.Image;
 import com.vaadin.ui.ItemCaptionGenerator;
 import com.vaadin.ui.Label;
@@ -108,9 +110,9 @@ public class MyUI extends UI{
 	public  TreeGrid<NodeTree> XMLtotree(String xml)
 	{
 		TreeGrid<NodeTree> treeGrid = new TreeGrid<>();
-        treeGrid.addColumn(NodeTree::getTag).setCaption("Tag").setId("name-column");
+        treeGrid.addColumn(NodeTree::getTag).setCaption("Debugging Questions").setId("name-column");
         treeGrid.addColumn(NodeTree::getValue).setCaption("Value");
-        treeGrid.addColumn(NodeTree::getSelection).setCaption("Please Select");
+        treeGrid.addComponentColumn(NodeTree::getSelection).setCaption("Please Select");
  
          
 		
@@ -122,7 +124,7 @@ public class MyUI extends UI{
 			Document doc = dBuilder.parse(is);
 	        Element root = doc.getDocumentElement();       
 	        List<NodeTree> listch = addChildrenToTree(root.getChildNodes());
-	        treeGrid.setItems(listch);
+	        treeGrid.setItems(listch,NodeTree::getSubNodes);
 	    } catch (Exception e) { }
 	   
 	return treeGrid;
@@ -131,6 +133,7 @@ public class MyUI extends UI{
 	public  List<NodeTree>  addChildrenToTree(NodeList children) {
 		
 		
+        
 		List<NodeTree> l = new ArrayList<NodeTree>();
 	    if (children.getLength() > 0) {  	
 	        for (int i = 0; i < children.getLength(); i++) {    	     	
@@ -139,8 +142,13 @@ public class MyUI extends UI{
 	        	    Element Element = (Element) node;
 	        	    String tag = Element.getTagName();   
 	        	    String text = Element.getTextContent();
-	        	    NodeTree sfp = new NodeTree(tag,text);
-	        	   
+	        	    NodeTree sfp = null;
+	        	    if (tag.equals("question")) { sfp = new NodeTree(tag,null,null);}
+	        	    else {
+	        	    	if (tag.equals("p") || tag.equals("sf")) {sfp = new NodeTree("Can be",text,null);}
+	        	    	else if (tag.equals("values")) {sfp = new NodeTree("equal to",null,null);}
+	        	    	else sfp = new NodeTree(tag,text,null);}
+	        	     
 	        	    //if (node.hasChildNodes()) {
 	        	    List<NodeTree> listch =addChildrenToTree(node.getChildNodes());
 	        	    sfp.setSubNodes(listch);
@@ -192,6 +200,7 @@ public class MyUI extends UI{
    		newTabLayout.addComponent(name);
    		newTabLayout.addComponent(resultt);
 		Tab tab = tabsheet.addTab(newTabLayout, "XML Document", null);	
+		
 		
 		name.setValue("bstore1");
 		String db = Debugger.load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\bstore1.xml");
@@ -418,26 +427,52 @@ public class MyUI extends UI{
 							    
 							    final VerticalLayout content = new VerticalLayout();
 							    content.setWidth("100%");
-						        content.setHeight("-1");
+						        content.setHeight("100%");
 						        content.setMargin(true);
 								content.addComponent(tree);
 								tree.setWidth("100%");
 								tree.setHeight("100%");
+								window.setSizeFull();
 								window.setContent(content);
 								addWindow(window);
-								/*
+								 
 							    option="Yes";
-								while (i< data.getChildren(root).size() && option.equals("Yes")) {
+							    TreeData<NodeTree> nodeTree = tree.getTreeData();
+								//while (i< nodeTree.getRootItems().size() && option.equals("Yes")) {
 									
+							    List<String> data = Arrays.asList("Yes", "No", "Jump", "Abort");
+								RadioButtonGroup selection = new RadioButtonGroup();
+						        selection = new RadioButtonGroup<String>("Select an option", data);
+						        selection.setStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
+						        selection.setItemCaptionGenerator(item ->"");
+						        selection.setItemIconGenerator((IconGenerator) item -> {
+						        	if (item.equals("Yes")) {
+						        	
+						        	return VaadinIcons.CHECK;}
+						        	else if (item.equals("No")) {
+						            	
+						            	return VaadinIcons.BUG;}
+						        	else if (item.equals("Jump")) {
+						            	
+						            	return VaadinIcons.TIME_FORWARD;}
+						        	else if (item.equals("Abort")) {
+						            	
+						            	return VaadinIcons.EXIT;}
+						        	else return null;
+						        	});
+						            
 									
-									Label question = data.getChildren(root).get(i);
-									tree.expand(question);
-								    explore(tree,question); 
-								    System.out.println(option);	
+									NodeTree item = nodeTree.getRootItems().get(0);
+									item.setSelection(selection);
+									tree.select(item);
+								    tree.expand(item);	
+								    for (int j=0; j < item.getSubNodes().size();j++)
+								    {
+								    	tree.expand(item.getSubNodes().get(j));
+								    }
 									i++;
-								}
-								*/		
-							    //removeWindow(window);
+								//}
+								 
 						
 							 
 						} catch (Exception e) {

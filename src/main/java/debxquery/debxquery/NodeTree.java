@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.vaadin.ui.RadioButtonGroup;
+import com.vaadin.ui.themes.ValoTheme;
 
 class NodeTree {
 	 
@@ -13,15 +14,18 @@ class NodeTree {
     private String value;
     private RadioButtonGroup selection;
 
-    public NodeTree(String tag, String value) {
+    public NodeTree(String tag, String value,RadioButtonGroup selection) {
         this.tag = tag;
         this.value= value;
-        List<Integer> data = Arrays.asList(0, 1, 2, 3, 4, 5);
+        this.selection = selection;
         
-        selection = new RadioButtonGroup<>("Select an option", data);
-        selection.setItemCaptionGenerator(item -> "Option " + item);
-        selection.setSelectedItem(data.get(2));
          
+         
+    }
+    
+    public void setSelection(RadioButtonGroup selection)
+    { 
+    	this.selection = selection;
     }
 
     public String getTag() {

@@ -15213,6 +15213,10 @@ div.v-layout.v-horizontal.v-widget {
 	color: blue;
 }
 
+.mytheme .v-app .v-select-optiongroup .v-select-option {
+	display: inline;
+}
+
 .mytheme .v-tabsheet-tabitemcell-foo .v-captiontext {
 	font-weight: bold;
 	color: red;
