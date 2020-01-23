@@ -27,6 +27,11 @@ class NodeTree {
     { 
     	this.selection = selection;
     }
+    
+    public void removeSelection()
+    { 
+    	this.selection = null;
+    }
 
     public String getTag() {
         return tag;
