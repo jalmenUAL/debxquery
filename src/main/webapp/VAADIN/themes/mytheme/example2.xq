@@ -1,9 +1,9 @@
 
 
 declare function local:AnimalOwner(){
-for $o in db:open("owner")/owners/owner
-for $p in db:open("pet")/pets/pet
-for $po in db:open("petOwner")/petOwners/petOwner
+for $o in db:open('owner')/owners/owner
+for $p in db:open('pet')/pets/pet
+for $po in db:open('petOwner')/petOwners/petOwner
 where ($o/id = $po/id) and ($p/code = $po/code) 
 return <animalOwner>{($o/id, $p/name, $p/species)}</animalOwner>
 };
@@ -23,7 +23,7 @@ declare function local:CatsAndDogsOwner(){
    where $ao1/id = $ao2/id and $ao1/species = 'dog' and $ao2/species = 'cat' 
    return (<catsAndDogsOwner>{$ao1/id, $ao1/name}</catsAndDogsOwner>,
            <catsAndDogsOwner>{$ao2/id, $ao2/name}</catsAndDogsOwner>)
-           (: Aquí un producto cartesiano que lo hace SQL :)
+            
 };
 
 declare function local:NoCommonName(){
@@ -35,23 +35,18 @@ declare function local:NoCommonName(){
    return <noCommonName>
           <id>{distinct-values($seq1[not(. = $seq2)]/text())}</id>
           </noCommonName>
-          (: No hacemos uso de except porque no trabaja sobre secuencias de nodos y em 
-             ambos casos tratamos secuencias de nodos :)
+           
 };
 
 declare function local:Guest(){
-  for $o in  db:open("owner")/owners/owner
-  where $o/id (: Segundo inner join :) = (for $n in local:NoCommonName()
+  for $o in  db:open('owner')/owners/owner
+  where $o/id  = (for $n in local:NoCommonName()
                  for $l in local:LessThan6()
-                 where $n/id = $l/id  (: Primer inner join:)
+                 where $n/id = $l/id   
                  return $n/id )
   return <guest>{$o/id, $o/name}</guest>
 };
 
-(: 
-local:AnimalOwner()
-local:LessThan6()
-local:CatsAndDogsOwner()
-local:NoCommonName() :)
+
 
 local:Guest()

@@ -282,6 +282,7 @@ public class MyUI extends UI{
 		strategycode.setWidth("100%");
 		strategycode.setValue("function($x){$x}");
 		
+		
 		 
 		/*setErrorHandler(new ErrorHandler() {		  
 		@Override public void error(com.vaadin.server.ErrorEvent event) {
@@ -360,25 +361,43 @@ public class MyUI extends UI{
 					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example1.xq");
 					editor.setValue(p);
 				documents.removeAllComponents();
-				VerticalLayout doc = 
-				DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml",
-						"bstore1");
-		   		documents.addTab(doc, "XML Document", null);};
+				VerticalLayout doc1 = 
+				DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+						"mylist");
+				VerticalLayout doc2 = 
+						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+								"bstore");
+				VerticalLayout doc3 = 
+						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+								"prices");
+		   		documents.addTab(doc1, "XML Document", null);
+		   		documents.addTab(doc2, "XML Document", null);
+		   		documents.addTab(doc3, "XML Document", null);
+				
+				};
 				if (event.getValue().equals("Example2")) {
-					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example2.xq");
+					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example2b.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
-				VerticalLayout doc = 
-						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml",
-								"bstore1");
-				   		documents.addTab(doc, "XML Document", null);};
+					VerticalLayout doc1 = 
+							DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\owner.xml",
+									"owner");
+							VerticalLayout doc2 = 
+									DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\petOwner.xml",
+											"petOwner");
+							VerticalLayout doc3 = 
+									DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\pet.xml",
+											"pet");
+					   		documents.addTab(doc1, "XML Document", null);
+					   		documents.addTab(doc2, "XML Document", null);
+					   		documents.addTab(doc3, "XML Document", null);};
 				if (event.getValue().equals("Example3")) {
 					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example3.xq");
 					editor.setValue(p);	
 					documents.removeAllComponents();
 				VerticalLayout doc = 
-						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml",
-								"bstore1");
+						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+								"prices");
 				   		documents.addTab(doc, "XML Document", null);};
 				if (event.getValue().equals("Example4")) {
 					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example4.xq");
@@ -451,7 +470,7 @@ public class MyUI extends UI{
 					String ctree = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\ctree.xq");				
 					String result = "";				
 					try (Query query = session.query(ctree+"\n"
-					+"<root>{local:treecalls("+strategycode.getValue()+",\""+editor.getValue()+"\")}</root>")) {		 
+					+"<root>{local:treecalls("+strategycode.getValue()+",\""+editor.getValue().replace("\"","'")+"\")}</root>")) {		 
 						while (query.more()) {							
 							String next = query.next();		
 							result = result + next + "\n";
@@ -474,9 +493,7 @@ public class MyUI extends UI{
 							error("Error",e.getMessage());
 						}					
 					}
-					session.execute("drop db bstore");
-					session.execute("drop db prices");
-					session.execute("drop db mylist");
+					 
 				} catch (IOException e) {
 					error("Error",e.getMessage());
 				}		
