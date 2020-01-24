@@ -1,6 +1,7 @@
 package debxquery.debxquery;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,6 +48,7 @@ import com.vaadin.server.ExternalResource;
 import com.vaadin.server.Page;
 import com.vaadin.server.ThemeResource;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.shared.Position;
 import com.vaadin.shared.ui.grid.HeightMode;
@@ -82,61 +84,32 @@ import com.vaadin.ui.themes.ValoTheme;
 
 import debxquery.debxquery.BaseXClient.Query;
 
-/**
- * This UI is the application entry point. A UI may either represent a browser
- * window (or tab) or some part of an HTML page where a Vaadin application is
- * embedded.
- * <p>
- * The UI is initialized using {@link #init(VaadinRequest)}. This method is
- * intended to be overridden to add component to the user interface and
- * initialize non-component functionality.
- */
 @Theme("mytheme")
 public class MyUI extends UI{
-	
-	String choice="Yes";
-	 
-	ComboBox<String> queries = new ComboBox<String>("Examples of Queries");
-	
-	public static String readStringFromURL(String requestURL) throws IOException {
-		try (Scanner scanner = new Scanner(new URL(requestURL).openStream(), StandardCharsets.UTF_8.toString())) {
-			scanner.useDelimiter("\\A");
-			return scanner.hasNext() ? scanner.next() : "";
-		}
-	}
-	
+
 	public  String load (String filename)
 	{
 	String fileAsString = "";
 	InputStream is;
 	try {
 		is = new FileInputStream(filename);
-	
 	BufferedReader buf = new BufferedReader(new InputStreamReader(is));
-	        
 	String line;
 	try {
 		line = buf.readLine();
-		StringBuilder sb = new StringBuilder();
-		
+		StringBuilder sb = new StringBuilder();		
 		while(line != null){
 			   sb.append(line).append("\n");
 			   line = buf.readLine();
 			}
 		buf.close();	        
-		    fileAsString = sb.toString();
-			//System.out.println("Contents : " + fileAsString);
-			
-			
+	    fileAsString = sb.toString();	
 	} catch (IOException e) {
 		error("Error",e.getMessage());
 	}
-	
-		
 	} catch (FileNotFoundException e) {
 		error("Error",e.getMessage());
-	}
-	
+	}	
 	return fileAsString;
 	}
 	
@@ -147,8 +120,7 @@ public class MyUI extends UI{
         treeGrid.addColumn(NodeTree::getTag).setCaption("Debugging Questions").setId("name-column");
         treeGrid.addColumn(NodeTree::getValue).setCaption("");
         treeGrid.addComponentColumn(NodeTree::getSelection).setCaption("Please Select");	
-		try {
-	         
+		try {    
 	        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 	        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 	        InputSource is = new InputSource(new StringReader(xml));
@@ -156,8 +128,7 @@ public class MyUI extends UI{
 	        Element root = doc.getDocumentElement();       
 	        List<NodeTree> listch = addChildrenToTree(root.getChildNodes());
 	        treeGrid.setItems(listch,NodeTree::getSubNodes);
-	    } catch (Exception e) { error("Error",e.getMessage()); }
-	   
+	    } catch (Exception e) { error("Error",e.getMessage()); }	   
 	return treeGrid;
 	};
 	
@@ -171,10 +142,7 @@ public class MyUI extends UI{
 		    i++;
 		}
     return leaf;		
-	}
-	
-	 
-	
+	}	
 	public  List<NodeTree>  addChildrenToTree(NodeList children) {       
 		List<NodeTree> l = new ArrayList<NodeTree>();
 	    if (children.getLength() > 0) {  	
@@ -182,23 +150,18 @@ public class MyUI extends UI{
 	            Node node = children.item(i);       
 	            if (node.getNodeType() == Node.ELEMENT_NODE) { 	
 	        	    Element Element = (Element) node;
-	        	    String tag = Element.getTagName(); 
-	        	    
-	        	     
-	        	    
+	        	    String tag = Element.getTagName();        	    
 	        	    String text = Element.getTextContent();
 	        	    NodeTree sfp = null;
 	        	    if (tag.equals("question")) { sfp = new NodeTree(tag,null,null);}
 	        	    else {
 	        	    	if (tag.equals("p") || tag.equals("sf")) {sfp = new NodeTree("Can be",text,null);}
 	        	    	else if (tag.equals("values")) { if (leaf_node(Element)) {sfp = new NodeTree("equal to",text,null);} 
-	        	    	else {sfp = new NodeTree("equal to",null,null);}}
-	        	    	
+	        	    	else {sfp = new NodeTree("equal to",null,null);}}    	    	
 	        	    	else if (leaf_node(Element)) {sfp = new NodeTree(tag,text,null);} else {sfp = new NodeTree(tag,null,null);}}	        	     
 	        	    
 	        	    List<NodeTree> listch =addChildrenToTree(node.getChildNodes());
-	        	    sfp.setSubNodes(listch);	        	    
-	        	    
+	        	    sfp.setSubNodes(listch);	        	           	    
 	        	    l.add(sfp);	        	    
 	        	  }        
 	            }  	        
@@ -206,10 +169,66 @@ public class MyUI extends UI{
 		return l;	   
 	}
 	
-	
+	public VerticalLayout DocPanel(String file,String database) {
+		
+		VerticalLayout firstdocument = new VerticalLayout();
+		firstdocument.setSizeFull();
+		HorizontalLayout dbl = new HorizontalLayout();
+		dbl.setWidth("100%");
+		Label dbn = new Label("Database Name");
+		dbn.setWidth("100%");
+		TextField name = new TextField();
+		name.setWidth("100%");
+		Button save = new Button("Save");
+		save.setWidth("100%");
+		
+		dbl.addComponent(dbn);
+   		dbl.addComponent(name);
+   		dbl.addComponent(save);
+   		dbl.setExpandRatio(dbn, 1f);
+   		dbl.setExpandRatio(name,7f);
+   		dbl.setExpandRatio(save,2f);
+		Panel xmld = new Panel("XML Document");
+		AceEditor xmldoc = new AceEditor();
+	   	xmldoc.setHeight("300px");
+	   	xmldoc.setWidth("100%");
+	   	xmldoc.setFontSize("12pt");
+	   	xmldoc.setMode(AceMode.xml);
+	   	xmldoc.setTheme(AceTheme.eclipse);
+	   	xmldoc.setUseWorker(true);
+	   	xmldoc.setReadOnly(false);
+	   	xmldoc.setShowInvisibles(false);
+	   	xmldoc.setShowGutter(false);
+	   	xmldoc.setUseSoftTabs(false);
+	   	xmldoc.setShowPrintMargin(false);
+	   	xmldoc.setWordWrap(true);
+   		xmld.setContent(xmldoc);
+   		
+   		save.addClickListener(new Button.ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) { 				
+				try (BaseXClient session = new BaseXClient("localhost", 1984, "admin", "admin")) {			
+					session.execute("drop db "+name.getValue());	
+					final InputStream code = new ByteArrayInputStream(xmldoc.getValue().getBytes());
+					session.create(name.getValue(),code);
+					print("Successful Operation","Database has been saved");
+				} catch (IOException e) {
+					error("Error",e.getMessage());
+				}	
+			}			
+		});		
+   		
+   		
+   		name.setValue(database);
+		if (!file.equals("")) {String db = load(file);xmldoc.setValue(db);firstdocument.setCaption(database);}	
+		firstdocument.addComponent(dbl);
+   		firstdocument.addComponent(xmld);
+   		return firstdocument;
+	}
 
 	@Override
-	protected void init(VaadinRequest vaadinRequest) {		 	 
+	protected void init(VaadinRequest vaadinRequest) {		
+		
 		VerticalLayout main = new VerticalLayout();
 		VerticalLayout query = new VerticalLayout();
 		VerticalLayout deb = new VerticalLayout();
@@ -224,100 +243,45 @@ public class MyUI extends UI{
 		lab.setHeight("200px");		
 		main.addComponent(lab);
 		main.addComponent(main_tab);	
-		TabSheet tabsheet = new TabSheet();	
-		VerticalLayout newTabLayout = new VerticalLayout();
-		newTabLayout.setSizeFull();
-		HorizontalLayout dbl = new HorizontalLayout();
-		Label dbn = new Label("Database Name");
-		TextField name = new TextField();
-		Button save = new Button("Save");
-		save.addClickListener(new Button.ClickListener() {
-			@Override
-			public void buttonClick(ClickEvent event) { 				
-				try (BaseXClient session = new BaseXClient("localhost", 1984, "admin", "admin")) {			
-					session.execute("drop db "+name.getValue());	
-					session.execute("create db "+name.getValue());
-					print("Successful Operation","Database has been saved");
-				} catch (IOException e) {
-					error("Error",e.getMessage());
-				}	
-			}			
-		});		
-			 
-		dbl.setWidth("100%");	
-		name.setWidth("100%");
-		dbn.setWidth("100%");
-		save.setWidth("100%");
-		Panel xmld = new Panel("XML Document");
-        AceEditor xmldoc = new AceEditor();
-   		xmldoc.setHeight("300px");
-   		xmldoc.setWidth("100%");
-   		xmldoc.setFontSize("12pt");
-   		xmldoc.setMode(AceMode.xml);
-   		xmldoc.setTheme(AceTheme.eclipse);
-   		xmldoc.setUseWorker(true);
-   		xmldoc.setReadOnly(false);
-   		xmldoc.setShowInvisibles(false);
-   		xmldoc.setShowGutter(false);
-   		xmldoc.setUseSoftTabs(false);
-   		xmldoc.setShowPrintMargin(false);
-   		xmldoc.setWordWrap(true);
-   		dbl.addComponent(dbn);
-   		dbl.addComponent(name);
-   		dbl.addComponent(save);
-   		dbl.setExpandRatio(dbn, 1f);
-   		dbl.setExpandRatio(name,7f);
-   		dbl.setExpandRatio(save,2f);
-   		newTabLayout.addComponent(dbl);
-   		newTabLayout.addComponent(xmld);
-   		xmld.setContent(xmldoc);
-		Tab tab = tabsheet.addTab(newTabLayout, "XML Document", null);		
-		name.setValue("bstore1");
-		String db = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\bstore1.xml");
-		xmldoc.setValue(db);		
-		tabsheet.addTab(new Label("XML Documents"),"+");
-		tabsheet.addSelectedTabChangeListener(new SelectedTabChangeListener() {
+		ComboBox<String> queries = new ComboBox<String>("Examples of Queries");
+		ComboBox<String> strategies = new ComboBox<String>("Strategies");
+		TabSheet documents = new TabSheet();
+        VerticalLayout firstdocument = DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml","bstore1");
+   		documents.addTab(firstdocument, "XML Document", null);	
+		documents.addTab(null,"+");
+		documents.addSelectedTabChangeListener(new SelectedTabChangeListener() {
 	    @Override
 			public void selectedTabChange(SelectedTabChangeEvent event) {
-				// TODO Auto-generated method stub
 				 TabSheet tabsheet = event.getTabSheet();
 			     Tab selectedTab = tabsheet.getTab(tabsheet.getSelectedTab());
 			     if (selectedTab != null) {
-			        if(selectedTab.getCaption().equals("+")){
-			                VerticalLayout newTabLayout = new VerticalLayout();
-			                TextField name = new TextField("Database Name");
-			        		name.setWidth("100%");
-			                AceEditor resultt = new AceEditor();
-				       		resultt.setHeight("300px");
-				       		resultt.setWidth("100%");
-				       		resultt.setFontSize("12pt");
-				       		resultt.setMode(AceMode.xml);
-				       		resultt.setTheme(AceTheme.eclipse);
-				       		resultt.setUseWorker(true);
-				       		resultt.setReadOnly(false);
-				       		resultt.setShowInvisibles(false);
-				       		resultt.setShowGutter(false);
-				       		resultt.setUseSoftTabs(false);
-				       		resultt.setShowPrintMargin(false);
-				       		resultt.setWordWrap(true);
-				       		newTabLayout.addComponent(name);
-				       		newTabLayout.addComponent(resultt);
-				       		newTabLayout.setSizeFull();
-			                Tab tab = tabsheet.addTab(newTabLayout, "XML Document", null);              
+			        if(selectedTab.getCaption().equals("+")){	        	    
+			                VerticalLayout newTabLayout = DocPanel("","");
+			                Tab tab = tabsheet.addTab(newTabLayout, "XML Document", null); 
 			                int newPosition = tabsheet.getTabPosition(tab);
 			                tabsheet.setTabPosition(tab,newPosition-1 );
-			                tabsheet.setTabPosition(selectedTab,newPosition );
+			                tabsheet.setTabPosition(selectedTab,newPosition );         
 			                tabsheet.setSelectedTab(tab);		       		
 			               }
-			       }}});
-	    
-		
+			       }}});		
 	    queries.setItems("Example1",
 				"Example2",
 				"Example3", "Example4",
-				"Example5");
+				"Example5","Example6");
 		queries.setEmptySelectionCaption("Please select a query:");
 		queries.setWidth("100%");
+		
+		strategies.setItems("Strategy1",
+				"Strategy2",
+				"Strategy3", "Strategy4",
+				"Strategy5");
+		strategies.setEmptySelectionCaption("Please select an strategy:");
+		strategies.setWidth("100%");
+		
+		TextField strategycode = new TextField("Strategy Code");
+		strategycode.setWidth("100%");
+		strategycode.setValue("function($x){$x}");
+		
 		 
 		/*setErrorHandler(new ErrorHandler() {		  
 		@Override public void error(com.vaadin.server.ErrorEvent event) {
@@ -340,8 +304,10 @@ public class MyUI extends UI{
 		editor.setUseSoftTabs(false);
 		editor.setShowPrintMargin(false);
 		editor.setWordWrap(true);		
-		String input = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\running.xq");
+		
+		String input = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\q1.xq");
 		editor.setValue(input);
+		
 		AceEditor resulte = new AceEditor();
 		resulte.setHeight("300px");
 		resulte.setWidth("100%");
@@ -354,20 +320,7 @@ public class MyUI extends UI{
 		resulte.setShowGutter(false);
 		resulte.setUseSoftTabs(false);
 		resulte.setShowPrintMargin(false);
-		resulte.setWordWrap(true);	
-		/*AceEditor resultd = new AceEditor();
-		resultd.setHeight("300px");
-		resultd.setWidth("100%");
-		resultd.setFontSize("12pt");
-		resultd.setMode(AceMode.xml);
-		resultd.setTheme(AceTheme.eclipse);
-		resultd.setUseWorker(true);
-		resultd.setReadOnly(false);
-		resultd.setShowInvisibles(false);
-		resultd.setShowGutter(false);
-		resultd.setUseSoftTabs(false);
-		resultd.setShowPrintMargin(false);
-		resultd.setWordWrap(true);*/		
+		resulte.setWordWrap(true);			
 		edS.setContent(editor);
 		resP.setContent(resulte);
 		Button run_button = new Button("Execute Query");
@@ -377,7 +330,17 @@ public class MyUI extends UI{
 		Button debug_button = new Button("Debug Query");
 		debug_button.setWidth("100%");
 		debug_button.setStyleName(ValoTheme.BUTTON_PRIMARY);
-		debug_button.setIcon(VaadinIcons.TOOLS);		 
+		debug_button.setIcon(VaadinIcons.TOOLS);		
+		 
+		
+		strategycode.addValueChangeListener(new com.vaadin.data.HasValue.ValueChangeListener<String>() {
+			@Override
+			public void valueChange(com.vaadin.data.HasValue.ValueChangeEvent<String> event) {			
+	 		 if (event.getValue().equals("")) {debug_button.setEnabled(false);}				
+			}
+		});
+		
+		
 		editor.addValueChangeListener(new com.vaadin.data.HasValue.ValueChangeListener<String>() {
 			@Override
 			public void valueChange(com.vaadin.data.HasValue.ValueChangeEvent<String> event) {			
@@ -391,26 +354,81 @@ public class MyUI extends UI{
 				 	
 		queries.addValueChangeListener(event -> {
 			if (event.getSource().isEmpty()) {
-				// error("", "Empty Selection. Please select an ontology.");
+				error("", "Empty Selection. Please select a query.");
 			} else {			 
+				if (event.getValue().equals("Example1")) {
+					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example1.xq");
+					editor.setValue(p);
+				documents.removeAllComponents();
+				VerticalLayout doc = 
+				DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml",
+						"bstore1");
+		   		documents.addTab(doc, "XML Document", null);};
+				if (event.getValue().equals("Example2")) {
+					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example2.xq");
+					editor.setValue(p);
+					documents.removeAllComponents();
+				VerticalLayout doc = 
+						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml",
+								"bstore1");
+				   		documents.addTab(doc, "XML Document", null);};
+				if (event.getValue().equals("Example3")) {
+					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example3.xq");
+					editor.setValue(p);	
+					documents.removeAllComponents();
+				VerticalLayout doc = 
+						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml",
+								"bstore1");
+				   		documents.addTab(doc, "XML Document", null);};
+				if (event.getValue().equals("Example4")) {
+					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example4.xq");
+					editor.setValue(p);
+					documents.removeAllComponents();
+				VerticalLayout doc = 
+						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml",
+								"bstore1");
+				   		documents.addTab(doc, "XML Document", null);};
+				if (event.getValue().equals("Example5")) {
+					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example5.xq");
+					editor.setValue(p);
+					documents.removeAllComponents();
+				VerticalLayout doc = 
+						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml",
+								"bstore1");
+				   		documents.addTab(doc, "XML Document", null);};
+				if (event.getValue().equals("Example6")) {
+					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example6.xq");
+					editor.setValue(p);
+					documents.removeAllComponents();
+				VerticalLayout doc = 
+						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml",
+								"bstore1");
+				   		documents.addTab(doc, "XML Document", null);};
 			}
 		});
+		
+		strategies.addValueChangeListener(event -> {
+			if (event.getSource().isEmpty()) {
+				error("", "Empty Selection. Please select an strategy.");
+			} else {	
+				if (event.getValue().equals("Strategy1")) { strategycode.setValue("function($x){$x}");};
+				if (event.getValue().equals("Strategy2")) {strategycode.setValue("function($x){for $ch in $x order by count($ch/values/node())\r\n" + 
+						"ascending return $ch}");};
+				if (event.getValue().equals("Strategy3")) {strategycode.setValue("function($x){($x[p],$x[not(p)])}");};
+				if (event.getValue().equals("Strategy4")) {strategycode.setValue("function($x){for $ch in $x order by $ch/@nc descending return $ch  }");};
+				if (event.getValue().equals("Strategy5")) {strategycode.setValue("function($x){(for $ch in $x where $ch[p] order by\r\n" + 
+						"  count($ch/values/node()) ascending return $ch,for $ch in $x where $ch[not(p)] order by\r\n" + 
+						"  count($ch/values/node()) ascending return $ch)}");};
+				
+				
+			}
+		});
+		
+		
 		run_button.addClickListener(new Button.ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) { 				
-			try (BaseXClient session = new BaseXClient("localhost", 1984, "admin", "admin")) {			
-				session.execute("drop db bstore");	
-				session.execute("drop db prices");
-				session.execute("drop db mylist");
-				File initialFile = new File("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\bstore.xml");
-				InputStream bstore = new FileInputStream(initialFile);
-				session.create("bstore", bstore);	
-				File initialFile2 = new File("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\prices.xml");
-				InputStream prices = new FileInputStream(initialFile2);
-				session.create("prices", prices);
-				File initialFile3 = new File("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\mylist.xml");
-				InputStream mylist = new FileInputStream(initialFile3);
-				session.create("mylist", mylist);			
+			try (BaseXClient session = new BaseXClient("localhost", 1984, "admin", "admin")) {					
 				String result = "";				
 				try (Query query = session.query(editor.getValue())) {		 					 
 					while (query.more()) {						
@@ -420,9 +438,6 @@ public class MyUI extends UI{
 					resulte.setValue(result); 
 					System.out.println(result);				
 				}
-				session.execute("drop db bstore");
-				session.execute("drop db prices");
-				session.execute("drop db mylist");
 			} catch (IOException e) {
 				error("Error",e.getMessage());
 			}		
@@ -433,22 +448,10 @@ public class MyUI extends UI{
 			@Override
 			public void buttonClick(ClickEvent event) {				 
 				try (BaseXClient session = new BaseXClient("localhost", 1984, "admin", "admin")) {
-					session.execute("drop db bstore");	
-					session.execute("drop db prices");
-					session.execute("drop db mylist");
-					File initialFile = new File("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\bstore.xml");
-					InputStream bstore = new FileInputStream(initialFile);
-					session.create("bstore", bstore);	
-					File initialFile2 = new File("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\prices.xml");
-					InputStream prices = new FileInputStream(initialFile2);
-					session.create("prices", prices);
-					File initialFile3 = new File("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\mylist.xml");
-					InputStream mylist = new FileInputStream(initialFile3);
-					session.create("mylist", mylist);
-					String ctree = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\ctree.xq");				
+					String ctree = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\ctree.xq");				
 					String result = "";				
 					try (Query query = session.query(ctree+"\n"
-					+"<root>{local:naive_strategy(\""+editor.getValue()+"\")}</root>")) {		 
+					+"<root>{local:treecalls("+strategycode.getValue()+",\""+editor.getValue()+"\")}</root>")) {		 
 						while (query.more()) {							
 							String next = query.next();		
 							result = result + next + "\n";
@@ -458,29 +461,15 @@ public class MyUI extends UI{
 						tree.setSizeFull();
 						DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 				        DocumentBuilder dBuilder;
-						try {						       
-							    //VerticalLayout content = new VerticalLayout();
-							    //content.setHeight("100%");
-						        //content.setMargin(true);
-								//content.addComponent(tree);
-
+						try {						      
 								tree.setHeight("800px");
 								deb.removeAllComponents();
 								deb.addComponent(tree);
-								main_tab.setSelectedTab(1);
-						        
-							    
+								main_tab.setSelectedTab(1);					    
 								TreeData<NodeTree> nodeTree = tree.getTreeData();
-								
-								
 								Integer size = nodeTree.getRootItems().size();
 								List<NodeTree> rootItems = nodeTree.getRootItems();
-								choice="Yes";
-								 
-							    selection(tree,rootItems,0,size,"Yes","main function");
-							     
-								    
-								    
+							    selection(tree,rootItems,0,size,"Yes","main function");						    
 						} catch (Exception e) {
 							error("Error",e.getMessage());
 						}					
@@ -500,12 +489,13 @@ public class MyUI extends UI{
 		deb.setWidth("100%");
 		deb.setHeight("100%");
 		query.addComponent(queries);
-		query.addComponent(tabsheet); 
+		query.addComponent(documents); 
 		query.addComponent(edS);
 		query.addComponent(debug_button);
+		query.addComponent(strategies);
+		query.addComponent(strategycode);
 		query.addComponent(run_button);
-		query.addComponent(resP);
-				 		 
+		query.addComponent(resP);				 		 
 		setContent(main);
 		this.setSizeFull();
 	}
@@ -514,9 +504,7 @@ public class MyUI extends UI{
 
 	@SuppressWarnings("unchecked")
 	public void selection(TreeGrid tree, List<NodeTree> rootItems,Integer i,Integer size,String parent,String nodeparent)
-	{
-		
-		 	
+	{		 	
 		if (rootItems.get(i).getTag().equals("question")) {
 	    List<String> data = Arrays.asList("Yes", "No", "Jump", "Abort");
 		RadioButtonGroup selection = new RadioButtonGroup();
@@ -545,8 +533,7 @@ public class MyUI extends UI{
 		    	tree.expand(item.getSubNodes().get(j));
 		    }
 		 
-		 selection.addValueChangeListener(new ValueChangeListener() {
-         
+		 selection.addValueChangeListener(new ValueChangeListener() {         
 			@Override
 			public void valueChange(ValueChangeEvent event) {
 				// TODO Auto-generated method stub
@@ -556,10 +543,8 @@ public class MyUI extends UI{
 				if (i==size-1) { if (parent.equals("Yes")) {print("Debugging result","No More Nodes Can Be Analyzed");
 	 			}
 	 			else {print("Debugging result","Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));} } else 
-					selection(tree,rootItems,i+1,size,parent,nodeparent);}
-				
-				if (event.getValue()=="No") {
-					 
+					selection(tree,rootItems,i+1,size,parent,nodeparent);}			
+				if (event.getValue()=="No") {				 
 											List<NodeTree> children = rootItems.get(i).getSubNodes();
 											selection(tree,children,0,children.size(),"No",item.getSubNodes().get(0).getValue());
 											}
