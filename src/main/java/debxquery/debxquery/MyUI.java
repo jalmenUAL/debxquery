@@ -1,5 +1,6 @@
 package debxquery.debxquery;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -47,9 +49,11 @@ import com.vaadin.server.ThemeResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.shared.Position;
+import com.vaadin.shared.ui.grid.HeightMode;
 import com.vaadin.ui.BrowserFrame;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
@@ -91,7 +95,7 @@ import debxquery.debxquery.BaseXClient.Query;
 public class MyUI extends UI{
 	
 	String choice="Yes";
-	final Window window = new Window("Debug Tree");
+	 
 	ComboBox<String> queries = new ComboBox<String>("Examples of Queries");
 	
 	public static String readStringFromURL(String requestURL) throws IOException {
@@ -101,11 +105,47 @@ public class MyUI extends UI{
 		}
 	}
 	
+	public  String load (String filename)
+	{
+	String fileAsString = "";
+	InputStream is;
+	try {
+		is = new FileInputStream(filename);
+	
+	BufferedReader buf = new BufferedReader(new InputStreamReader(is));
+	        
+	String line;
+	try {
+		line = buf.readLine();
+		StringBuilder sb = new StringBuilder();
+		
+		while(line != null){
+			   sb.append(line).append("\n");
+			   line = buf.readLine();
+			}
+		buf.close();	        
+		    fileAsString = sb.toString();
+			//System.out.println("Contents : " + fileAsString);
+			
+			
+	} catch (IOException e) {
+		error("Error",e.getMessage());
+	}
+	
+		
+	} catch (FileNotFoundException e) {
+		error("Error",e.getMessage());
+	}
+	
+	return fileAsString;
+	}
+	
 	public  TreeGrid<NodeTree> XMLtotree(String xml)
 	{
 		TreeGrid<NodeTree> treeGrid = new TreeGrid<>();
+		treeGrid.setSizeFull();
         treeGrid.addColumn(NodeTree::getTag).setCaption("Debugging Questions").setId("name-column");
-        treeGrid.addColumn(NodeTree::getValue).setCaption("Value");
+        treeGrid.addColumn(NodeTree::getValue).setCaption("");
         treeGrid.addComponentColumn(NodeTree::getSelection).setCaption("Please Select");	
 		try {
 	         
@@ -116,10 +156,24 @@ public class MyUI extends UI{
 	        Element root = doc.getDocumentElement();       
 	        List<NodeTree> listch = addChildrenToTree(root.getChildNodes());
 	        treeGrid.setItems(listch,NodeTree::getSubNodes);
-	    } catch (Exception e) { }
+	    } catch (Exception e) { error("Error",e.getMessage()); }
 	   
 	return treeGrid;
 	};
+	
+	public Boolean leaf_node(Element element)
+	{
+		Boolean leaf = true;
+		Integer i=0;
+		while (leaf && i < element.getChildNodes().getLength())
+		{
+			if (element.getChildNodes().item(i).hasChildNodes()) {leaf = false;}
+		    i++;
+		}
+    return leaf;		
+	}
+	
+	 
 	
 	public  List<NodeTree>  addChildrenToTree(NodeList children) {       
 		List<NodeTree> l = new ArrayList<NodeTree>();
@@ -128,18 +182,23 @@ public class MyUI extends UI{
 	            Node node = children.item(i);       
 	            if (node.getNodeType() == Node.ELEMENT_NODE) { 	
 	        	    Element Element = (Element) node;
-	        	    String tag = Element.getTagName();   
+	        	    String tag = Element.getTagName(); 
+	        	    
+	        	     
+	        	    
 	        	    String text = Element.getTextContent();
 	        	    NodeTree sfp = null;
 	        	    if (tag.equals("question")) { sfp = new NodeTree(tag,null,null);}
 	        	    else {
 	        	    	if (tag.equals("p") || tag.equals("sf")) {sfp = new NodeTree("Can be",text,null);}
-	        	    	else if (tag.equals("values")) {sfp = new NodeTree("equal to",null,null);}
-	        	    	else sfp = new NodeTree(tag,text,null);}	        	     
-	        	    //if (node.hasChildNodes()) {
+	        	    	else if (tag.equals("values")) { if (leaf_node(Element)) {sfp = new NodeTree("equal to",text,null);} 
+	        	    	else {sfp = new NodeTree("equal to",null,null);}}
+	        	    	
+	        	    	else if (leaf_node(Element)) {sfp = new NodeTree(tag,text,null);} else {sfp = new NodeTree(tag,null,null);}}	        	     
+	        	    
 	        	    List<NodeTree> listch =addChildrenToTree(node.getChildNodes());
 	        	    sfp.setSubNodes(listch);	        	    
-	        	    //}
+	        	    
 	        	    l.add(sfp);	        	    
 	        	  }        
 	            }  	        
@@ -150,39 +209,72 @@ public class MyUI extends UI{
 	
 
 	@Override
-	protected void init(VaadinRequest vaadinRequest) {
-		
-		window.setWidth("100%");
-	    window.setHeight("100%");		 
-		final VerticalLayout main = new VerticalLayout();
-		main.setMargin(false);		
+	protected void init(VaadinRequest vaadinRequest) {		 	 
+		VerticalLayout main = new VerticalLayout();
+		VerticalLayout query = new VerticalLayout();
+		VerticalLayout deb = new VerticalLayout();
+		main.setMargin(false);				
+		TabSheet main_tab = new TabSheet();
+		main_tab.addTab(query,"Querying",null);
+		main_tab.addTab(deb, "Debugging",null);
+		main_tab.setSizeFull();
+		main.addComponent(main_tab);	
 		Image lab = new Image(null, new ThemeResource("banner-deb.png"));
 	    lab.setWidth("100%");
 		lab.setHeight("200px");		
 		main.addComponent(lab);
+		main.addComponent(main_tab);	
 		TabSheet tabsheet = new TabSheet();	
 		VerticalLayout newTabLayout = new VerticalLayout();
-		TextField name = new TextField("Database Name");
+		newTabLayout.setSizeFull();
+		HorizontalLayout dbl = new HorizontalLayout();
+		Label dbn = new Label("Database Name");
+		TextField name = new TextField();
+		Button save = new Button("Save");
+		save.addClickListener(new Button.ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) { 				
+				try (BaseXClient session = new BaseXClient("localhost", 1984, "admin", "admin")) {			
+					session.execute("drop db "+name.getValue());	
+					session.execute("create db "+name.getValue());
+					print("Successful Operation","Database has been saved");
+				} catch (IOException e) {
+					error("Error",e.getMessage());
+				}	
+			}			
+		});		
+			 
+		dbl.setWidth("100%");	
 		name.setWidth("100%");
-        AceEditor resultt = new AceEditor();
-   		resultt.setHeight("300px");
-   		resultt.setWidth("100%");
-   		resultt.setFontSize("12pt");
-   		resultt.setMode(AceMode.xml);
-   		resultt.setTheme(AceTheme.eclipse);
-   		resultt.setUseWorker(true);
-   		resultt.setReadOnly(false);
-   		resultt.setShowInvisibles(false);
-   		resultt.setShowGutter(false);
-   		resultt.setUseSoftTabs(false);
-   		resultt.setShowPrintMargin(false);
-   		resultt.setWordWrap(true);
-   		newTabLayout.addComponent(name);
-   		newTabLayout.addComponent(resultt);
+		dbn.setWidth("100%");
+		save.setWidth("100%");
+		Panel xmld = new Panel("XML Document");
+        AceEditor xmldoc = new AceEditor();
+   		xmldoc.setHeight("300px");
+   		xmldoc.setWidth("100%");
+   		xmldoc.setFontSize("12pt");
+   		xmldoc.setMode(AceMode.xml);
+   		xmldoc.setTheme(AceTheme.eclipse);
+   		xmldoc.setUseWorker(true);
+   		xmldoc.setReadOnly(false);
+   		xmldoc.setShowInvisibles(false);
+   		xmldoc.setShowGutter(false);
+   		xmldoc.setUseSoftTabs(false);
+   		xmldoc.setShowPrintMargin(false);
+   		xmldoc.setWordWrap(true);
+   		dbl.addComponent(dbn);
+   		dbl.addComponent(name);
+   		dbl.addComponent(save);
+   		dbl.setExpandRatio(dbn, 1f);
+   		dbl.setExpandRatio(name,7f);
+   		dbl.setExpandRatio(save,2f);
+   		newTabLayout.addComponent(dbl);
+   		newTabLayout.addComponent(xmld);
+   		xmld.setContent(xmldoc);
 		Tab tab = tabsheet.addTab(newTabLayout, "XML Document", null);		
 		name.setValue("bstore1");
-		String db = Debugger.load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\bstore1.xml");
-		resultt.setValue(db);		
+		String db = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\bstore1.xml");
+		xmldoc.setValue(db);		
 		tabsheet.addTab(new Label("XML Documents"),"+");
 		tabsheet.addSelectedTabChangeListener(new SelectedTabChangeListener() {
 	    @Override
@@ -210,6 +302,7 @@ public class MyUI extends UI{
 				       		resultt.setWordWrap(true);
 				       		newTabLayout.addComponent(name);
 				       		newTabLayout.addComponent(resultt);
+				       		newTabLayout.setSizeFull();
 			                Tab tab = tabsheet.addTab(newTabLayout, "XML Document", null);              
 			                int newPosition = tabsheet.getTabPosition(tab);
 			                tabsheet.setTabPosition(tab,newPosition-1 );
@@ -247,7 +340,7 @@ public class MyUI extends UI{
 		editor.setUseSoftTabs(false);
 		editor.setShowPrintMargin(false);
 		editor.setWordWrap(true);		
-		String input = Debugger.load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\q1b.xq");
+		String input = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\running.xq");
 		editor.setValue(input);
 		AceEditor resulte = new AceEditor();
 		resulte.setHeight("300px");
@@ -262,7 +355,7 @@ public class MyUI extends UI{
 		resulte.setUseSoftTabs(false);
 		resulte.setShowPrintMargin(false);
 		resulte.setWordWrap(true);	
-		AceEditor resultd = new AceEditor();
+		/*AceEditor resultd = new AceEditor();
 		resultd.setHeight("300px");
 		resultd.setWidth("100%");
 		resultd.setFontSize("12pt");
@@ -274,7 +367,7 @@ public class MyUI extends UI{
 		resultd.setShowGutter(false);
 		resultd.setUseSoftTabs(false);
 		resultd.setShowPrintMargin(false);
-		resultd.setWordWrap(true);		
+		resultd.setWordWrap(true);*/		
 		edS.setContent(editor);
 		resP.setContent(resulte);
 		Button run_button = new Button("Execute Query");
@@ -331,8 +424,7 @@ public class MyUI extends UI{
 				session.execute("drop db prices");
 				session.execute("drop db mylist");
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				error("Error",e.getMessage());
 			}		
 			}			
 		});
@@ -353,7 +445,7 @@ public class MyUI extends UI{
 					File initialFile3 = new File("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\mylist.xml");
 					InputStream mylist = new FileInputStream(initialFile3);
 					session.create("mylist", mylist);
-					String ctree = Debugger.load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\ctree.xq");				
+					String ctree = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\ctree.xq");				
 					String result = "";				
 					try (Query query = session.query(ctree+"\n"
 					+"<root>{local:naive_strategy(\""+editor.getValue()+"\")}</root>")) {		 
@@ -362,22 +454,24 @@ public class MyUI extends UI{
 							result = result + next + "\n";
 						}	
 						System.out.println(result);
-						TreeGrid<NodeTree> tree = XMLtotree(result);					
+						TreeGrid<NodeTree> tree = XMLtotree(result);		
+						tree.setSizeFull();
 						DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 				        DocumentBuilder dBuilder;
 						try {						       
-							    final VerticalLayout content = new VerticalLayout();
-							    content.setWidth("100%");
-						        content.setHeight("100%");
-						        content.setMargin(true);
-								content.addComponent(tree);
-								tree.setWidth("100%");
-								tree.setHeight("100%");
-								window.setSizeFull();
-								window.setContent(content);
-								addWindow(window);							 
+							    //VerticalLayout content = new VerticalLayout();
+							    //content.setHeight("100%");
+						        //content.setMargin(true);
+								//content.addComponent(tree);
+
+								tree.setHeight("800px");
+								deb.removeAllComponents();
+								deb.addComponent(tree);
+								main_tab.setSelectedTab(1);
+						        
 							    
 								TreeData<NodeTree> nodeTree = tree.getTreeData();
+								
 								
 								Integer size = nodeTree.getRootItems().size();
 								List<NodeTree> rootItems = nodeTree.getRootItems();
@@ -388,35 +482,37 @@ public class MyUI extends UI{
 								    
 								    
 						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							error("Error",e.getMessage());
 						}					
 					}
 					session.execute("drop db bstore");
 					session.execute("drop db prices");
 					session.execute("drop db mylist");
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					error("Error",e.getMessage());
 				}		
 				
 			}
 		});
 		
-		main.setWidth("100%");
-		main.addComponent(lab);
-		main.addComponent(queries);
-		main.addComponent(tabsheet); 
-		main.addComponent(edS);
-		main.addComponent(run_button);
-		main.addComponent(resP);
-		main.addComponent(debug_button);		 		 
+		query.setWidth("100%");
+		query.setHeight("100%");
+		deb.setWidth("100%");
+		deb.setHeight("100%");
+		query.addComponent(queries);
+		query.addComponent(tabsheet); 
+		query.addComponent(edS);
+		query.addComponent(debug_button);
+		query.addComponent(run_button);
+		query.addComponent(resP);
+				 		 
 		setContent(main);
 		this.setSizeFull();
 	}
 	
 	
 
+	@SuppressWarnings("unchecked")
 	public void selection(TreeGrid tree, List<NodeTree> rootItems,Integer i,Integer size,String parent,String nodeparent)
 	{
 		
@@ -457,9 +553,9 @@ public class MyUI extends UI{
 				item.removeSelection();
 				//
 				if (event.getValue()=="Yes") {tree.collapse(item); 
-				if (i==size-1) { if (parent.equals("Yes")) {Notification.show("No More Nodes Can Be Analyzed");
+				if (i==size-1) { if (parent.equals("Yes")) {print("Debugging result","No More Nodes Can Be Analyzed");
 	 			}
-	 			else {Notification.show("Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));} } else 
+	 			else {print("Debugging result","Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));} } else 
 					selection(tree,rootItems,i+1,size,parent,nodeparent);}
 				
 				if (event.getValue()=="No") {
@@ -468,21 +564,28 @@ public class MyUI extends UI{
 											selection(tree,children,0,children.size(),"No",item.getSubNodes().get(0).getValue());
 											}
 				if (event.getValue()=="Jump") 
-				{if (i==size-1) {tree.collapse(item);if (parent.equals("Yes")) {Notification.show("No More Nodes Can Be Analyzed");}
-				else {Notification.show("Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));}} else selection(tree,rootItems,i+1,size,parent,nodeparent);}
-				if (event.getValue()=="Abort") {tree.collapse(item);Notification.show("Debugging Aborted");}
+				{if (i==size-1) {tree.collapse(item);if (parent.equals("Yes")) {print("Debugging result","No More Nodes Can Be Analyzed");}
+				else {print("Debugging result","Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));}} else selection(tree,rootItems,i+1,size,parent,nodeparent);}
+				if (event.getValue()=="Abort") {tree.collapse(item);print("Debugging result","Debugging Aborted");}
 				
 			}});
-		} else if (i==size-1) {if (parent.equals("Yes")) {Notification.show("No More Nodes Can Be Analyzed");
+		} else if (i==size-1) {if (parent.equals("Yes")) {print("Debugging result","No More Nodes Can Be Analyzed");
 		 			}
-		 			else {Notification.show("Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));}} else selection(tree,rootItems,i+1,size,parent,nodeparent); 
+		 			else {print("Debugging result","Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));}} else selection(tree,rootItems,i+1,size,parent,nodeparent); 
 		 
+	}
+	
+	public void print(String type, String message) {
+		Notification notif = new Notification(type, message, Notification.Type.ERROR_MESSAGE);
+		notif.setDelayMsec(20000);
+		notif.setPosition(Position.MIDDLE_CENTER);
+		notif.show(Page.getCurrent());
 	}
 	
 	public void error(String type, String message) {
 		Notification notif = new Notification(type, message, Notification.Type.ERROR_MESSAGE);
 		notif.setDelayMsec(20000);
-		notif.setPosition(Position.BOTTOM_RIGHT);
+		notif.setPosition(Position.MIDDLE_CENTER);
 		notif.show(Page.getCurrent());
 	}
 

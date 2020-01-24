@@ -37,7 +37,7 @@ declare function local:data($t)
         return
         if ($b[editor]) then ($b/editor,$b/publisher,<mrate>{$mr}</mrate>)
         else
-          ($b/author[position()<=1],$b/publisher,<mrate>{$mr}</mrate>)
+         $mr (: ($b/author[position()<=1],$b/publisher,<mrate>{$mr}</mrate>):)
 };
 
 <bib>
