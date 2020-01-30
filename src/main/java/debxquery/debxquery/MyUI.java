@@ -17,8 +17,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 
 import javax.servlet.annotation.WebServlet;
 import javax.xml.parsers.DocumentBuilder;
@@ -86,6 +88,8 @@ import debxquery.debxquery.BaseXClient.Query;
 
 @Theme("mytheme")
 public class MyUI extends UI{
+	
+	Set<String> set = new HashSet<String>(); 
 
 	public  String load (String filename)
 	{
@@ -115,6 +119,7 @@ public class MyUI extends UI{
 	
 	public  TreeGrid<NodeTree> XMLtotree(String xml)
 	{
+		 
 		TreeGrid<NodeTree> treeGrid = new TreeGrid<>();
 		treeGrid.setSizeFull();
 		
@@ -156,6 +161,7 @@ public class MyUI extends UI{
 	        	    String tag = Element.getTagName();        	    
 	        	    String text = Element.getTextContent();
 	        	    NodeTree sfp = null;
+	        	    
 	        	    if (tag.equals("question")) { sfp = new NodeTree(tag,null,null);}
 	        	    else {
 	        	    	if (tag.equals("p") || tag.equals("sf")) {sfp = new NodeTree("Can be",text,null);}
@@ -163,12 +169,16 @@ public class MyUI extends UI{
 	        	    	else {sfp = new NodeTree("equal to",null,null);}}    	    	
 	        	    	else if (leaf_node(Element)) {sfp = new NodeTree(tag,text,null);} else {sfp = new NodeTree(tag,null,null);}}	        	     
 	        	    
-	        	    List<NodeTree> listch =addChildrenToTree(node.getChildNodes());
-	        	    sfp.setSubNodes(listch);	        	           	    
-	        	    l.add(sfp);	        	    
-	        	  }        
+	        	    	        	           	    
+	        	     
+	        	    	 List<NodeTree> listch =addChildrenToTree(node.getChildNodes());
+	 	        	     sfp.setSubNodes(listch);
+	 	        	     l.add(sfp);
+	        	     
+	            }
+	            }       
 	            }  	        
-	    }   
+	       
 		return l;	   
 	}
 	
@@ -483,7 +493,8 @@ public class MyUI extends UI{
 						tree.setSizeFull();
 						DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 				        DocumentBuilder dBuilder;
-						try {						      
+						try {						
+							    set.clear();
 								tree.setHeight("800px");
 								deb.removeAllComponents();
 								deb.addComponent(tree);
@@ -525,6 +536,7 @@ public class MyUI extends UI{
 	@SuppressWarnings("unchecked")
 	public void selection(TreeGrid tree, List<NodeTree> rootItems,Integer i,Integer size,String parent,String nodeparent)
 	{		 	
+		
 		if (rootItems.get(i).getTag().equals("question")) {
 	    List<String> data = Arrays.asList("Yes", "No", "Jump", "Abort");
 		RadioButtonGroup selection = new RadioButtonGroup();
@@ -549,11 +561,16 @@ public class MyUI extends UI{
 		    tree.expand(item);	
 		    tree.getColumn("value").setMinimumWidth(item.getSubNodes().get(0).getValue().length());
 		    
-		    for (int j=0; j < 2;j++)
+		    for (int j=0; j < item.getSubNodes().size();j++)
 		    {
-		    	tree.expand(item.getSubNodes().get(j));
+		    	if (item.getSubNodes().get(j).hasTag("Can be") ||
+		    			item.getSubNodes().get(j).hasTag("on") ||
+		    			item.getSubNodes().get(j).hasTag("equal to"))
+		    			{tree.expand(item.getSubNodes().get(j));
+		    	         tree.expand(item.getSubNodes().get(j).getSubNodes());}
 		    }
 		 
+		    
 		 selection.addValueChangeListener(new ValueChangeListener() {         
 			@Override
 			public void valueChange(ValueChangeEvent event) {
@@ -563,15 +580,27 @@ public class MyUI extends UI{
 				if (event.getValue()=="Yes") {tree.collapse(item); 
 				if (i==size-1) { if (parent.equals("Yes")) {print("Debugging result","No More Nodes Can Be Analyzed");
 	 			}
-	 			else {print("Debugging result","Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));} } else 
-					selection(tree,rootItems,i+1,size,parent,nodeparent);}			
+	 			else {print("Debugging result","Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));} } 
+				
+				else 
+				
+	 				selection(tree,rootItems,i+1,size,parent,nodeparent);
+				
+				}			
 				if (event.getValue()=="No") {				 
 											List<NodeTree> children = rootItems.get(i).getSubNodes();
 											selection(tree,children,0,children.size(),"No",item.getSubNodes().get(0).getValue());
 											}
 				if (event.getValue()=="Jump") 
 				{if (i==size-1) {tree.collapse(item);if (parent.equals("Yes")) {print("Debugging result","No More Nodes Can Be Analyzed");}
-				else {print("Debugging result","Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));}} else selection(tree,rootItems,i+1,size,parent,nodeparent);}
+				else {print("Debugging result","Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));}} 
+				else 
+					
+					selection(tree,rootItems,i+1,size,parent,nodeparent);
+	
+				}
+				
+				
 				if (event.getValue()=="Abort") {tree.collapse(item);print("Debugging result","Debugging Aborted");}
 				
 			}});

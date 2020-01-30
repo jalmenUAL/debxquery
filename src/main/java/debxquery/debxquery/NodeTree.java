@@ -23,6 +23,10 @@ class NodeTree {
          
     }
     
+    public Boolean hasTag(String tag) {
+    	return tag.equals(this.tag);
+    }
+    
     public void setSelection(RadioButtonGroup selection)
     { 
     	this.selection = selection;
