@@ -160,11 +160,14 @@ public class MyUI extends UI{
 	        	    Element Element = (Element) node;
 	        	    String tag = Element.getTagName();        	    
 	        	    String text = Element.getTextContent();
+	        	     
 	        	    NodeTree sfp = null;
 	        	    
 	        	    if (tag.equals("question")) { sfp = new NodeTree(tag,null,null);}
 	        	    else {
-	        	    	if (tag.equals("p") || tag.equals("sf")) {sfp = new NodeTree("Can be",text,null);}
+	        	    	 
+	        	    	if (tag.equals("p")) {if (leaf_node(Element)) {sfp = new NodeTree("Can be",text,null);} 
+	        	    	else {sfp = new NodeTree("Can be",null,null);}}
 	        	    	else if (tag.equals("values")) { if (leaf_node(Element)) {sfp = new NodeTree("equal to",text,null);} 
 	        	    	else {sfp = new NodeTree("equal to",null,null);}}    	    	
 	        	    	else if (leaf_node(Element)) {sfp = new NodeTree(tag,text,null);} else {sfp = new NodeTree(tag,null,null);}}	        	     
@@ -175,7 +178,7 @@ public class MyUI extends UI{
 	 	        	     sfp.setSubNodes(listch);
 	 	        	     l.add(sfp);
 	        	     
-	            }
+	            }  
 	            }       
 	            }  	        
 	       
@@ -564,7 +567,7 @@ public class MyUI extends UI{
 		    for (int j=0; j < item.getSubNodes().size();j++)
 		    {
 		    	if (item.getSubNodes().get(j).hasTag("Can be") ||
-		    			item.getSubNodes().get(j).hasTag("on") ||
+		    			 
 		    			item.getSubNodes().get(j).hasTag("equal to"))
 		    			{tree.expand(item.getSubNodes().get(j));
 		    	         tree.expand(item.getSubNodes().get(j).getSubNodes());}
