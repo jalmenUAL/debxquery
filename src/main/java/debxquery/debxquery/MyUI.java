@@ -117,8 +117,11 @@ public class MyUI extends UI{
 	{
 		TreeGrid<NodeTree> treeGrid = new TreeGrid<>();
 		treeGrid.setSizeFull();
-        treeGrid.addColumn(NodeTree::getTag).setCaption("Debugging Questions").setId("name-column");
-        treeGrid.addColumn(NodeTree::getValue).setCaption("");
+		
+        treeGrid.addColumn(NodeTree::getTag).setCaption("Debugging Questions").setId("question");
+        treeGrid.addColumn(NodeTree::getValue).setCaption("").setId("value");
+         
+         
         treeGrid.addComponentColumn(NodeTree::getSelection).setCaption("Please Select");	
 		try {    
 	        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -544,6 +547,7 @@ public class MyUI extends UI{
 	
 			tree.select(item);
 		    tree.expand(item);	
+		    tree.getColumn("value").setMinimumWidth(item.getSubNodes().get(0).getValue().length());
 		    
 		    for (int j=0; j < 2;j++)
 		    {

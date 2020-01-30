@@ -1,7 +1,7 @@
 declare function local:min($t)
 {
    let $prices := db:open('prices')
-   let $p := $prices//book[title = $t]/price
+   let $p := $prices//book[title = $t]/year
    return min($p)
 };
 
@@ -33,11 +33,11 @@ declare function local:data($t)
 {
  for $b in db:open('bstore')//book[title=$t]
  let $mr := local:rate($b/rate)
- where  $mr > 0
+ where  $mr < 0
         return
         if ($b[editor]) then ($b/editor,$b/publisher,<mrate>{$mr}</mrate>)
         else
-         $mr (: ($b/author[position()<=1],$b/publisher,<mrate>{$mr}</mrate>):)
+          ($b/author[position()<=1],$b/publisher,<mrate>{$mr}</mrate>)
 };
 
 <bib>
@@ -55,3 +55,4 @@ local:min_price($t)
 </book>
 }
 </bib>     
+	
