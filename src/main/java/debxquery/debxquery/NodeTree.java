@@ -23,6 +23,11 @@ class NodeTree {
          
     }
     
+    public Boolean hasSubNodes()
+    {
+    	return ! (subNodes == null);
+    }
+    
     public Boolean hasTag(String tag) {
     	return tag.equals(this.tag);
     }

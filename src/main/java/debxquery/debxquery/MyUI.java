@@ -32,6 +32,7 @@ import org.vaadin.aceeditor.AceMode;
 import org.vaadin.aceeditor.AceTheme;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
@@ -135,7 +136,10 @@ public class MyUI extends UI{
 			Document doc = dBuilder.parse(is);
 	        Element root = doc.getDocumentElement();       
 	        List<NodeTree> listch = addChildrenToTree(root.getChildNodes());
+	        List<NodeTree> listatt = addAttributesToTree(root.getAttributes());
+	        listch.addAll(listatt);
 	        treeGrid.setItems(listch,NodeTree::getSubNodes);
+	        
 	    } catch (Exception e) { error("Error",e.getMessage()); }	   
 	return treeGrid;
 	};
@@ -151,6 +155,38 @@ public class MyUI extends UI{
 		}
     return leaf;		
 	}	
+	
+	public String text_content(Element element)
+	{
+	  String content = "";
+	  Integer i=0;
+	  while (i < element.getChildNodes().getLength())
+		{
+			if (element.getChildNodes().item(i).getNodeName().equals("#text"))
+			{content = content + element.getChildNodes().item(i).getNodeValue();}
+		    i++;
+		}
+    return content;
+	}
+	
+	public List<NodeTree> addAttributesToTree(NamedNodeMap atts) {
+		
+	    
+		List<NodeTree> l = new ArrayList<NodeTree>();
+		
+		for (int i=0; i<atts.getLength();i++)
+		{
+			NodeTree sfp = null;
+			String name = atts.item(i).getNodeName();
+			String text = atts.item(i).getTextContent();
+			if (name.equals("nc")) {}
+			else {sfp = new NodeTree(name,text,null);
+			l.add(sfp);}
+			
+		}
+		return l;
+	}
+	
 	public  List<NodeTree>  addChildrenToTree(NodeList children) {       
 		List<NodeTree> l = new ArrayList<NodeTree>();
 	    if (children.getLength() > 0) {  	
@@ -162,12 +198,32 @@ public class MyUI extends UI{
 	        	    String text = Element.getTextContent();
 	        	     
 	        	    NodeTree sfp = null;
+	        	    NodeTree sfp2 = null;
+	        	    
 	        	    
 	        	    if (tag.equals("question")) { sfp = new NodeTree(tag,null,null);}
 	        	    else {
 	        	    	 
 	        	    	if (tag.equals("p")) {if (leaf_node(Element)) {sfp = new NodeTree("Can be",text,null);} 
-	        	    	else {sfp = new NodeTree("Can be",null,null);}}
+	        	    	else {
+	        	    	
+	        	        String content = text_content(Element);
+	        	    		
+	        	    	sfp = new NodeTree("Can be",null,null);
+	        	    	sfp2 = new NodeTree("on the path",content,null);
+	        	    	
+	        	    	}}
+	        	    	else
+	        	    	if (tag.equals("sf")) {sfp = new NodeTree("Can be",null,null);}
+	        	    	else
+	        	    	if (tag.equals("fun")) {sfp = new NodeTree("the function call",text,null);}
+	        	    	else
+	        	    	if (tag.equals("args")) 
+	        	    	{if (leaf_node(Element)) 
+	        	    	{sfp = new NodeTree("with arguments",text,null);} 
+	        	    	else 
+	        	    	{sfp = new NodeTree("with arguments",null,null);}
+	        	    	}
 	        	    	else if (tag.equals("values")) { if (leaf_node(Element)) {sfp = new NodeTree("equal to",text,null);} 
 	        	    	else {sfp = new NodeTree("equal to",null,null);}}    	    	
 	        	    	else if (leaf_node(Element)) {sfp = new NodeTree(tag,text,null);} else {sfp = new NodeTree(tag,null,null);}}	        	     
@@ -175,10 +231,13 @@ public class MyUI extends UI{
 	        	    	        	           	    
 	        	     
 	        	    	 List<NodeTree> listch =addChildrenToTree(node.getChildNodes());
+	        	    	 List<NodeTree> listatt = addAttributesToTree(node.getAttributes());
+	        		     listch.addAll(listatt);
 	 	        	     sfp.setSubNodes(listch);
 	 	        	     l.add(sfp);
+	 	        	     if (!(sfp2==null)) { l.add(sfp2);}
 	        	     
-	            }  
+	            }   
 	            }       
 	            }  	        
 	       
@@ -540,13 +599,15 @@ public class MyUI extends UI{
 	public void selection(TreeGrid tree, List<NodeTree> rootItems,Integer i,Integer size,String parent,String nodeparent)
 	{		 	
 		
-		if (rootItems.get(i).getTag().equals("question")) {
+		if (rootItems.get(i).getTag().equals("question")) 
+		{
 	    List<String> data = Arrays.asList("Yes", "No", "Jump", "Abort");
 		RadioButtonGroup selection = new RadioButtonGroup();
         selection = new RadioButtonGroup<String>("Select an option", data);
         selection.setStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
         selection.setItemCaptionGenerator(item ->"");
         selection.setItemIconGenerator((IconGenerator) item -> {
+        	
         	if (item.equals("Yes")) {					        	
         	return VaadinIcons.CHECK;}
         	else if (item.equals("No")) {						            	
@@ -556,21 +617,24 @@ public class MyUI extends UI{
         	else if (item.equals("Abort")) {						            	
             	return VaadinIcons.EXIT;}
         	else return null;
-        	});									
+        	});			
+           
 			NodeTree item = rootItems.get(i);
 			item.setSelection(selection);
 	
 			tree.select(item);
 		    tree.expand(item);	
-		    tree.getColumn("value").setMinimumWidth(item.getSubNodes().get(0).getValue().length());
+		    //tree.getColumn("value").setMinimumWidth(item.getSubNodes().get(0).getValue().length());
 		    
 		    for (int j=0; j < item.getSubNodes().size();j++)
 		    {
 		    	if (item.getSubNodes().get(j).hasTag("Can be") ||
 		    			 
 		    			item.getSubNodes().get(j).hasTag("equal to"))
-		    			{tree.expand(item.getSubNodes().get(j));
-		    	         tree.expand(item.getSubNodes().get(j).getSubNodes());}
+		    			{
+		    		     tree.expand(item.getSubNodes().get(j));
+		    	         if (item.getSubNodes().get(j).hasSubNodes()) {tree.expand(item.getSubNodes().get(j).getSubNodes());}
+		    	        }
 		    }
 		 
 		    
@@ -580,10 +644,15 @@ public class MyUI extends UI{
 				// TODO Auto-generated method stub
 				item.removeSelection();
 				//
-				if (event.getValue()=="Yes") {tree.collapse(item); 
-				if (i==size-1) { if (parent.equals("Yes")) {print("Debugging result","No More Nodes Can Be Analyzed");
+				if (event.getValue()=="Yes") {
+				tree.collapse(item); 
+				if (i==size-1) { 
+					if (parent.equals("Yes")) {print("Debugging result","No More Nodes Can Be Analyzed");
 	 			}
-	 			else {print("Debugging result","Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));} } 
+	 			else {
+	 				print("Debugging result","Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));
+	 				} 
+					} 
 				
 				else 
 				
@@ -591,25 +660,45 @@ public class MyUI extends UI{
 				
 				}			
 				if (event.getValue()=="No") {				 
-											List<NodeTree> children = rootItems.get(i).getSubNodes();
-											selection(tree,children,0,children.size(),"No",item.getSubNodes().get(0).getValue());
+						List<NodeTree> children = rootItems.get(i).getSubNodes();
+						selection(tree,children,0,children.size(),"No",item.getSubNodes().get(0).getValue());
 											}
 				if (event.getValue()=="Jump") 
-				{if (i==size-1) {tree.collapse(item);if (parent.equals("Yes")) {print("Debugging result","No More Nodes Can Be Analyzed");}
-				else {print("Debugging result","Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));}} 
+				{
+				if (i==size-1) 
+				{
+					tree.collapse(item);
+					if (parent.equals("Yes")) {
+						print("Debugging result","No More Nodes Can Be Analyzed");
+						}
+				else {
+					print("Debugging result","Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));
+					}
+				} 
 				else 
-					
 					selection(tree,rootItems,i+1,size,parent,nodeparent);
-	
 				}
 				
 				
-				if (event.getValue()=="Abort") {tree.collapse(item);print("Debugging result","Debugging Aborted");}
+				if (event.getValue()=="Abort") {
+					tree.collapse(item);
+					print("Debugging result","Debugging Aborted");
+					}
 				
-			}});
-		} else if (i==size-1) {if (parent.equals("Yes")) {print("Debugging result","No More Nodes Can Be Analyzed");
-		 			}
-		 			else {print("Debugging result","Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));}} else selection(tree,rootItems,i+1,size,parent,nodeparent); 
+			    }
+			    }
+		        );
+		 } 
+		        else 
+		        	if (i==size-1) {
+		        		if (parent.equals("Yes")) 
+		        		{print("Debugging result","No More Nodes Can Be Analyzed");
+		 			    }
+		 			    else {
+		 			    	print("Debugging result","Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));
+		 			    	}
+		        		} else 
+		        			selection(tree,rootItems,i+1,size,parent,nodeparent); 
 		 
 	}
 	
