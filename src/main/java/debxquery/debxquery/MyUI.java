@@ -196,14 +196,15 @@ public class MyUI extends UI{
 	        	    Element Element = (Element) node;
 	        	    String tag = Element.getTagName();        	    
 	        	    String text = Element.getTextContent();
-	        	     
+	        	    
+	        	       
 	        	    NodeTree sfp = null;
 	        	    NodeTree sfp2 = null;
 	        	    
 	        	    
 	        	    if (tag.equals("question")) { sfp = new NodeTree(tag,null,null);}
 	        	    else {
-	        	    	 
+	        	    	
 	        	    	if (tag.equals("p")) {if (leaf_node(Element)) {sfp = new NodeTree("Can be",text,null);} 
 	        	    	else {
 	        	    	
@@ -238,6 +239,7 @@ public class MyUI extends UI{
 	 	        	     if (!(sfp2==null)) { l.add(sfp2);}
 	        	     
 	            }   
+	            
 	            }       
 	            }  	        
 	       
@@ -601,7 +603,7 @@ public class MyUI extends UI{
 		
 		if (rootItems.get(i).getTag().equals("question")) 
 		{
-	    List<String> data = Arrays.asList("Yes", "No", "Jump", "Abort");
+	    List<String> data = Arrays.asList("Yes", "No", "Abort");
 		RadioButtonGroup selection = new RadioButtonGroup();
         selection = new RadioButtonGroup<String>("Select an option", data);
         selection.setStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
@@ -612,8 +614,7 @@ public class MyUI extends UI{
         	return VaadinIcons.CHECK;}
         	else if (item.equals("No")) {						            	
             	return VaadinIcons.BUG;}
-        	else if (item.equals("Jump")) {						            	
-            	return VaadinIcons.TIME_FORWARD;}
+        	 
         	else if (item.equals("Abort")) {						            	
             	return VaadinIcons.EXIT;}
         	else return null;
@@ -624,7 +625,7 @@ public class MyUI extends UI{
 	
 			tree.select(item);
 		    tree.expand(item);	
-		    //tree.getColumn("value").setMinimumWidth(item.getSubNodes().get(0).getValue().length());
+		     
 		    
 		    for (int j=0; j < item.getSubNodes().size();j++)
 		    {
@@ -647,47 +648,40 @@ public class MyUI extends UI{
 				if (event.getValue()=="Yes") {
 				tree.collapse(item); 
 				if (i==size-1) { 
-					if (parent.equals("Yes")) {print("Debugging result","No More Nodes Can Be Analyzed");
-	 			}
-	 			else {
-	 				print("Debugging result","Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));
-	 				} 
+					if (parent.equals("Yes")) {print("Debugging result","No More Nodes Can Be Analyzed");}
+				    if (parent.equals("No")) {print("Debugging result", 
+				    		"Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));
 					} 
+				}
 				
 				else 
 				
 	 				selection(tree,rootItems,i+1,size,parent,nodeparent);
 				
-				}			
+				} 
+				else			
 				if (event.getValue()=="No") {				 
 						List<NodeTree> children = rootItems.get(i).getSubNodes();
-						selection(tree,children,0,children.size(),"No",item.getSubNodes().get(0).getValue());
+						String nodeparent = "";
+						if (!(rootItems.get(i).getSubNodes().get(0).getValue()==null)) 
+									{nodeparent= rootItems.get(i).getSubNodes().get(0).getValue();}
+						else 
+						if (rootItems.get(i).getSubNodes().get(1).getTag().equals("on the path")) 
+							 
+							{nodeparent = rootItems.get(i).getSubNodes().get(1).getValue();}
+						
+						else nodeparent = rootItems.get(i).getSubNodes().get(0).getSubNodes().get(0).getValue();
+						selection(tree,children,0,children.size(),"No",nodeparent);
 											}
-				if (event.getValue()=="Jump") 
-				{
-				if (i==size-1) 
-				{
-					tree.collapse(item);
-					if (parent.equals("Yes")) {
-						print("Debugging result","No More Nodes Can Be Analyzed");
-						}
-				else {
-					print("Debugging result","Error Found in "+nodeparent.replace(System.getProperty("line.separator"), ""));
-					}
-				} 
-				else 
-					selection(tree,rootItems,i+1,size,parent,nodeparent);
-				}
 				
-				
+				else
 				if (event.getValue()=="Abort") {
 					tree.collapse(item);
 					print("Debugging result","Debugging Aborted");
 					}
 				
 			    }
-			    }
-		        );
+		 });
 		 } 
 		        else 
 		        	if (i==size-1) {
