@@ -62,12 +62,43 @@ $v-component-group-spacing: 6px;
     color:blue
   }
   
+  .canbe {
+    color:brown;
+    background-color: black
+  }
+  
+  .equalto {
+    color:red;
+   background-color: black
+  }
+  
+  .onthepath {
+    color:orange;
+    background-color: black
+  }
+  
+  .thefunctioncall {
+    color:magenta;
+    background-color: black
+  }
+  
+  .witharguments {
+    color:magenta;
+    background-color: black
+  }
+  
+  .v-treegrid {
+	 .v-treegrid-cell {
+		font-weight: bold;
+	}
+}
+  
   .v-app .v-select-optiongroup .v-select-option {
     display:inline;
 }
   .v-tabsheet-tabitemcell-foo{
      .v-captiontext {
-       font-weight: bold;
+       
        color: red;
      }
    }
@@ -76,4 +107,6 @@ $v-component-group-spacing: 6px;
     white-space: pre-wrap;
   }
 }
+ 
+
 }

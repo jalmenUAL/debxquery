@@ -91,6 +91,7 @@ import debxquery.debxquery.BaseXClient.Query;
 public class MyUI extends UI{
 	
 	Set<String> set = new HashSet<String>(); 
+	TabSheet documents = new TabSheet();
 
 	public  String load (String filename)
 	{
@@ -127,6 +128,18 @@ public class MyUI extends UI{
         treeGrid.addColumn(NodeTree::getTag).setCaption("Debugging Questions").setId("question");
         treeGrid.addColumn(NodeTree::getValue).setCaption("").setId("value");
          
+      
+        
+        treeGrid.setStyleGenerator(rowReference ->
+        {
+          final String value = (String) rowReference.getTag();
+          if (value.equals("Can be")) {return "canbe";}
+          if (value.equals("equal to")) {return "equalto";}
+          if (value.equals("on the path")) {return "onthepath";}
+          if (value.equals("the function call")) {return "thefunctioncall";}
+          if (value.equals("with arguments")) {return "witharguments";}
+          return null;
+        });
          
         treeGrid.addComponentColumn(NodeTree::getSelection).setCaption("Please Select");	
 		try {    
@@ -195,24 +208,20 @@ public class MyUI extends UI{
 	            if (node.getNodeType() == Node.ELEMENT_NODE) { 	
 	        	    Element Element = (Element) node;
 	        	    String tag = Element.getTagName();        	    
-	        	    String text = Element.getTextContent();
-	        	    
-	        	       
+	        	    String text = Element.getTextContent();  
+	        	    String content = text_content(Element);
+	        	    if (set.contains(text)) {}
+	        	    else
+	        	    {
 	        	    NodeTree sfp = null;
-	        	    NodeTree sfp2 = null;
-	        	    
-	        	    
-	        	    if (tag.equals("question")) { sfp = new NodeTree(tag,null,null);}
+	        	    NodeTree sfp2 = null;  	     
+	        	    if (tag.equals("question")) { sfp = new NodeTree(tag,null,null); set.add(text);}
 	        	    else {
-	        	    	
 	        	    	if (tag.equals("p")) {if (leaf_node(Element)) {sfp = new NodeTree("Can be",text,null);} 
 	        	    	else {
-	        	    	
-	        	        String content = text_content(Element);
-	        	    		
+	        	         
 	        	    	sfp = new NodeTree("Can be",null,null);
-	        	    	sfp2 = new NodeTree("on the path",content,null);
-	        	    	
+	        	    	sfp2 = new NodeTree("on the path",content,null);      	    	
 	        	    	}}
 	        	    	else
 	        	    	if (tag.equals("sf")) {sfp = new NodeTree("Can be",null,null);}
@@ -227,29 +236,24 @@ public class MyUI extends UI{
 	        	    	}
 	        	    	else if (tag.equals("values")) { if (leaf_node(Element)) {sfp = new NodeTree("equal to",text,null);} 
 	        	    	else {sfp = new NodeTree("equal to",null,null);}}    	    	
-	        	    	else if (leaf_node(Element)) {sfp = new NodeTree(tag,text,null);} else {sfp = new NodeTree(tag,null,null);}}	        	     
-	        	    
-	        	    	        	           	    
-	        	     
+	        	    	else if (leaf_node(Element)) {sfp = new NodeTree(tag,text,null);} else {sfp = new NodeTree(tag,null,null);}}	        	             	     
 	        	    	 List<NodeTree> listch =addChildrenToTree(node.getChildNodes());
 	        	    	 List<NodeTree> listatt = addAttributesToTree(node.getAttributes());
 	        		     listch.addAll(listatt);
 	 	        	     sfp.setSubNodes(listch);
 	 	        	     l.add(sfp);
-	 	        	     if (!(sfp2==null)) { l.add(sfp2);}
-	        	     
+	 	        	     if (!(sfp2==null)) { l.add(sfp2);}        	     
 	            }   
-	            
 	            }       
 	            }  	        
-	       
+	    }
 		return l;	   
 	}
 	
 	public VerticalLayout DocPanel(String file,String database) {
 		
 		VerticalLayout firstdocument = new VerticalLayout();
-		firstdocument.setSizeFull();
+		//firstdocument.setSizeFull();
 		HorizontalLayout dbl = new HorizontalLayout();
 		dbl.setWidth("100%");
 		Label dbn = new Label("Database Name");
@@ -262,10 +266,11 @@ public class MyUI extends UI{
 		dbl.addComponent(dbn);
    		dbl.addComponent(name);
    		dbl.addComponent(save);
-   		dbl.setExpandRatio(dbn, 1f);
-   		dbl.setExpandRatio(name,7f);
-   		dbl.setExpandRatio(save,2f);
-		Panel xmld = new Panel("XML Document");
+   		dbl.setExpandRatio(dbn, 0.8f);
+   		dbl.setExpandRatio(name,8.2f);
+   		dbl.setExpandRatio(save,1f);
+   		
+		Panel xmld = new Panel();
 		AceEditor xmldoc = new AceEditor();
 	   	xmldoc.setHeight("300px");
 	   	xmldoc.setWidth("100%");
@@ -283,15 +288,29 @@ public class MyUI extends UI{
    		
    		save.addClickListener(new Button.ClickListener() {
 			@Override
-			public void buttonClick(ClickEvent event) { 				
+			public void buttonClick(ClickEvent event) { 			
+				
+				if (name.getValue().equals("bstore1") || 
+						name.getValue().equals("bstore") ||
+						name.getValue().equals("pet") ||
+						name.getValue().equals("owner") ||
+						name.getValue().equals("petOwner") ||
+						name.getValue().equals("mylist") ||
+						name.getValue().equals("prices"))
+				{error("Forbidden Operation","This database name is not allowed. Please rename.");}
+				else
+				{
 				try (BaseXClient session = new BaseXClient("localhost", 1984, "admin", "admin")) {			
 					session.execute("drop db "+name.getValue());	
 					final InputStream code = new ByteArrayInputStream(xmldoc.getValue().getBytes());
 					session.create(name.getValue(),code);
+					Tab selectedTab = documents.getTab(documents.getSelectedTab());
+					selectedTab.setCaption(name.getValue());
 					print("Successful Operation","Database has been saved");
 				} catch (IOException e) {
 					error("Error",e.getMessage());
 				}	
+				}
 			}			
 		});		
    		
@@ -310,22 +329,30 @@ public class MyUI extends UI{
 		VerticalLayout query = new VerticalLayout();
 		VerticalLayout deb = new VerticalLayout();
 		main.setMargin(false);				
+		
 		TabSheet main_tab = new TabSheet();
 		main_tab.addTab(query,"Querying",null);
 		main_tab.addTab(deb, "Debugging",null);
 		main_tab.setSizeFull();
 		main.addComponent(main_tab);	
+		
 		Image lab = new Image(null, new ThemeResource("banner-deb.png"));
 	    lab.setWidth("100%");
 		lab.setHeight("200px");		
 		main.addComponent(lab);
-		main.addComponent(main_tab);	
+		main.addComponent(main_tab);
+		
 		ComboBox<String> queries = new ComboBox<String>("Examples of Queries");
 		ComboBox<String> strategies = new ComboBox<String>("Strategies");
-		TabSheet documents = new TabSheet();
-        VerticalLayout firstdocument = DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml","bstore1");
-   		documents.addTab(firstdocument, "XML Document", null);	
-		documents.addTab(null,"+");
+		
+		
+        VerticalLayout firstdocument = 
+        DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml","bstore1");
+        VerticalLayout seconddocument = 
+                DocPanel("","");
+        documents.addTab(firstdocument, "bstore1", null);		
+		documents.addTab(seconddocument,"+");
+		
 		documents.addSelectedTabChangeListener(new SelectedTabChangeListener() {
 	    @Override
 			public void selectedTabChange(SelectedTabChangeEvent event) {
@@ -334,24 +361,24 @@ public class MyUI extends UI{
 			     if (selectedTab != null) {
 			        if(selectedTab.getCaption().equals("+")){	        	    
 			                VerticalLayout newTabLayout = DocPanel("","");
-			                Tab tab = tabsheet.addTab(newTabLayout, "XML Document", null); 
+			                Tab tab = tabsheet.addTab(newTabLayout, "New", null); 
 			                int newPosition = tabsheet.getTabPosition(tab);
 			                tabsheet.setTabPosition(tab,newPosition-1 );
 			                tabsheet.setTabPosition(selectedTab,newPosition );         
 			                tabsheet.setSelectedTab(tab);		       		
 			               }
 			       }}});		
-	    queries.setItems("Example1",
-				"Example2",
-				"Example3", "Example4",
-				"Example5","Example6");
+	    queries.setItems("Example 1",
+				"Example 2",
+				"Example 3", "Example 4",
+				"Example 5","Example 6");
 		queries.setEmptySelectionCaption("Please select a query:");
 		queries.setWidth("100%");
 		
-		strategies.setItems("Strategy1",
-				"Strategy2",
-				"Strategy3", "Strategy4",
-				"Strategy5");
+		strategies.setItems("Naive Strategy",
+				"Smallest Results First",
+				"Paths First", "Biggest Subtrees First",
+				"Smalles Results and Paths First");
 		strategies.setEmptySelectionCaption("Please select an strategy:");
 		strategies.setWidth("100%");
 		
@@ -398,13 +425,16 @@ public class MyUI extends UI{
 		resulte.setShowGutter(false);
 		resulte.setUseSoftTabs(false);
 		resulte.setShowPrintMargin(false);
-		resulte.setWordWrap(true);			
+		resulte.setWordWrap(true);		
+		
 		edS.setContent(editor);
 		resP.setContent(resulte);
+		
 		Button run_button = new Button("Execute Query");
 		run_button.setWidth("100%");
 		run_button.setStyleName(ValoTheme.BUTTON_FRIENDLY);
-		run_button.setIcon(VaadinIcons.PLAY);	 
+		run_button.setIcon(VaadinIcons.PLAY);	
+		
 		Button debug_button = new Button("Debug Query");
 		debug_button.setWidth("100%");
 		debug_button.setStyleName(ValoTheme.BUTTON_PRIMARY);
@@ -434,9 +464,10 @@ public class MyUI extends UI{
 			if (event.getSource().isEmpty()) {
 				error("", "Empty Selection. Please select a query.");
 			} else {			 
-				if (event.getValue().equals("Example1")) {
+				if (event.getValue().equals("Example 1")) {
 					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example1.xq");
 					editor.setValue(p);
+				documents.removeAllComponents();
 				documents.removeAllComponents();
 				VerticalLayout doc1 = 
 				DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
@@ -447,12 +478,12 @@ public class MyUI extends UI{
 				VerticalLayout doc3 = 
 						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
 								"prices");
-		   		documents.addTab(doc1, "XML Document", null);
-		   		documents.addTab(doc2, "XML Document", null);
-		   		documents.addTab(doc3, "XML Document", null);
+		   		documents.addTab(doc1, "mylist", null);
+		   		documents.addTab(doc2, "bstore", null);
+		   		documents.addTab(doc3, "prices", null);
 				
 				};
-				if (event.getValue().equals("Example2")) {
+				if (event.getValue().equals("Example 2")) {
 					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example2b.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
@@ -465,41 +496,41 @@ public class MyUI extends UI{
 							VerticalLayout doc3 = 
 									DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\pet.xml",
 											"pet");
-					   		documents.addTab(doc1, "XML Document", null);
-					   		documents.addTab(doc2, "XML Document", null);
-					   		documents.addTab(doc3, "XML Document", null);};
-				if (event.getValue().equals("Example3")) {
+					   		documents.addTab(doc1, "owner", null);
+					   		documents.addTab(doc2, "petOwner", null);
+					   		documents.addTab(doc3, "pet", null);};
+				if (event.getValue().equals("Example 3")) {
 					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example3.xq");
 					editor.setValue(p);	
 					documents.removeAllComponents();
 				VerticalLayout doc = 
 						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
 								"prices");
-				   		documents.addTab(doc, "XML Document", null);};
-				if (event.getValue().equals("Example4")) {
+				   		documents.addTab(doc, "prices", null);};
+				if (event.getValue().equals("Example 4")) {
 					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example4.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
 				VerticalLayout doc = 
 						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml",
 								"bstore1");
-				   		documents.addTab(doc, "XML Document", null);};
-				if (event.getValue().equals("Example5")) {
+				   		documents.addTab(doc, "bstore1", null);};
+				if (event.getValue().equals("Example 5")) {
 					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example5.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
 				VerticalLayout doc = 
 						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml",
 								"bstore1");
-				   		documents.addTab(doc, "XML Document", null);};
-				if (event.getValue().equals("Example6")) {
+				   		documents.addTab(doc, "bstore1", null);};
+				if (event.getValue().equals("Example 6")) {
 					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example6.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
 				VerticalLayout doc = 
 						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml",
 								"bstore1");
-				   		documents.addTab(doc, "XML Document", null);};
+				   		documents.addTab(doc, "bstore1", null);};
 			}
 		});
 		
@@ -507,12 +538,12 @@ public class MyUI extends UI{
 			if (event.getSource().isEmpty()) {
 				error("", "Empty Selection. Please select an strategy.");
 			} else {	
-				if (event.getValue().equals("Strategy1")) { strategycode.setValue("function($x){$x}");};
-				if (event.getValue().equals("Strategy2")) {strategycode.setValue("function($x){for $ch in $x order by count($ch/values/node())\r\n" + 
+				if (event.getValue().equals("Naive Strategy")) { strategycode.setValue("function($x){$x}");};
+				if (event.getValue().equals("Smallest Results First")) {strategycode.setValue("function($x){for $ch in $x order by count($ch/values/node())\r\n" + 
 						"ascending return $ch}");};
-				if (event.getValue().equals("Strategy3")) {strategycode.setValue("function($x){($x[p],$x[not(p)])}");};
-				if (event.getValue().equals("Strategy4")) {strategycode.setValue("function($x){for $ch in $x order by $ch/@nc descending return $ch  }");};
-				if (event.getValue().equals("Strategy5")) {strategycode.setValue("function($x){(for $ch in $x where $ch[p] order by\r\n" + 
+				if (event.getValue().equals("Paths First")) {strategycode.setValue("function($x){($x[p],$x[not(p)])}");};
+				if (event.getValue().equals("Biggest Subtrees First")) {strategycode.setValue("function($x){for $ch in $x order by $ch/@nc descending return $ch  }");};
+				if (event.getValue().equals("Smalles Results and Paths First")) {strategycode.setValue("function($x){(for $ch in $x where $ch[p] order by\r\n" + 
 						"  count($ch/values/node()) ascending return $ch,for $ch in $x where $ch[not(p)] order by\r\n" + 
 						"  count($ch/values/node()) ascending return $ch)}");};
 				
@@ -600,7 +631,7 @@ public class MyUI extends UI{
 	@SuppressWarnings("unchecked")
 	public void selection(TreeGrid tree, List<NodeTree> rootItems,Integer i,Integer size,String parent,String nodeparent)
 	{		 	
-		
+			
 		if (rootItems.get(i).getTag().equals("question")) 
 		{
 	    List<String> data = Arrays.asList("Yes", "No", "Abort");
@@ -613,8 +644,7 @@ public class MyUI extends UI{
         	if (item.equals("Yes")) {					        	
         	return VaadinIcons.CHECK;}
         	else if (item.equals("No")) {						            	
-            	return VaadinIcons.BUG;}
-        	 
+            	return VaadinIcons.BUG;}      	 
         	else if (item.equals("Abort")) {						            	
             	return VaadinIcons.EXIT;}
         	else return null;

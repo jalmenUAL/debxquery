@@ -15188,12 +15188,40 @@ div.v-layout.v-horizontal.v-widget {
 	color: blue;
 }
 
+.mytheme .canbe {
+	color: brown;
+	background-color: black;
+}
+
+.mytheme .equalto {
+	color: red;
+	background-color: black;
+}
+
+.mytheme .onthepath {
+	color: orange;
+	background-color: black;
+}
+
+.mytheme .thefunctioncall {
+	color: magenta;
+	background-color: black;
+}
+
+.mytheme .witharguments {
+	color: magenta;
+	background-color: black;
+}
+
+.mytheme .v-treegrid .v-treegrid-cell {
+	font-weight: bold;
+}
+
 .mytheme .v-app .v-select-optiongroup .v-select-option {
 	display: inline;
 }
 
 .mytheme .v-tabsheet-tabitemcell-foo .v-captiontext {
-	font-weight: bold;
 	color: red;
 }
 
