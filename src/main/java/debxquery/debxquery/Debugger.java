@@ -393,6 +393,7 @@ public class Debugger {
 					String next = query.next();		
 					option = explore(session,next); 
 				}		 
+				if (option.equals("Y")) {System.out.println("No more nodes can be analyzed");}
 				System.out.println(query.info());
 			}
 			
@@ -411,27 +412,49 @@ public class Debugger {
 	public static String explore(BaseXClient session,String next)
 	{  
 		Scanner scanner = new Scanner(System. in);
-		String question = "let $x:=" + next + "return $x/(p|sf)/node()";
+		
+		Boolean path = false;
+		String questionp = "let $x:=" + next + "return $x/p";
+		Query qp;
+		try {
+			qp = session.query(questionp);
+			if (qp.more()) {path = true;}
+		}
+	    catch (IOException e) {
+		e.printStackTrace();
+	    }
+		
+		if (path)
+		{
+		
 		System.out.print("Can be ");
-		Query qsc;
+		String question = "let $x:=" + next + "return $x/p/node()";
+		
 		String option = "Y";
 		try {
+			Query qsc;
 			qsc = session.query(question);
-			String squestion = "";
+			String pathq = "";
+			 
 			while(qsc.more()) {
+				 
 				String qnext = qsc.next();
-				squestion = qnext;
+				pathq = qnext;
 				System.out.println(qnext);
 				
 			}
 		
+			
 			String values = "let $x:=" + next + "return $x/values/node()";
 			System.out.print(" equal to ");
 			Query qvalues = session.query(values);
+			Boolean empty = true;
 			while(qvalues.more()) {
 			    String nvalues = qvalues.next();
-				System.out.print(nvalues);		
+			    System.out.print(nvalues);		
+			    empty = false;
 			}
+			if (empty) System.out.println("()");
 			System.out.println("?");
 			System.out.println("Question (Y/N):");	
 			option  = scanner.nextLine();  
@@ -447,7 +470,7 @@ public class Debugger {
 		    				 
 		    			}
 		    			if (optionch.equals("Y")) {				 
-		    				System.out.println("Error in "+squestion);
+		    				System.out.println("Error in "+pathq);
 		    			}
 		    			
 		    		} catch (IOException e) {
@@ -456,12 +479,74 @@ public class Debugger {
 		    		
 		    		return option;
 		        } else  return option;
+		    
+		    
+		    
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return option;
 		
-        
+		} else 
+			
+		{
+			System.out.print("Can be ");
+			String question = "let $x:=" + next + "return $x/sf/node()/node()";
+			
+			String option = "Y";
+			try {
+				Query qsc;
+				qsc = session.query(question);
+				 
+				qsc.more();
+				String fun = qsc.next();
+				qsc.more();
+				String args = qsc.next(); 
+				System.out.println("This function call: "+fun);	 
+				System.out.println("with arguments: "+args);
+				
+				String values = "let $x:=" + next + "return $x/values/node()";
+				System.out.print(" equal to ");
+				Query qvalues = session.query(values);
+				Boolean empty = true;
+				while(qvalues.more()) {
+				    String nvalues = qvalues.next();
+				    empty = false;
+					System.out.print(nvalues);		
+				}
+				if (empty) System.out.println("()");
+				System.out.println("?");
+				System.out.println("Question (Y/N):");	
+				option  = scanner.nextLine();  
+			    if (option.equals("N")) {	
+			        	String questionch = "let $x:=" + next + "return $x/question";
+			        	Query qch;
+			    		try {
+			    			qch = session.query(questionch);
+			    			String optionch ="Y";
+			    			while(qch.more() && optionch.equals("Y")) {
+			    				 String ch = qch.next();
+			    				 optionch = explore(session,ch);
+			    				 
+			    			}
+			    			if (optionch.equals("Y")) {				 
+			    				System.out.println("Error in "+fun);
+			    			}
+			    			
+			    		} catch (IOException e) {
+			    			e.printStackTrace();
+			    		}
+			    		
+			    		return option;
+			        } else  return option;
+			    
+			    
+			    
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return option;
+		}
 		 
 	}
 	
