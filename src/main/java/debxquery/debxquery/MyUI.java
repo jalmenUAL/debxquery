@@ -90,6 +90,7 @@ import debxquery.debxquery.BaseXClient.Query;
 @Theme("mytheme")
 public class MyUI extends UI{
 	
+	
 	Set<String> set = new HashSet<String>(); 
 	TabSheet documents = new TabSheet();
 

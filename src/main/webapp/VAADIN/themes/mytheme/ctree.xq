@@ -1081,8 +1081,8 @@ declare function local:printPath($epath,$static)
              }</p>
              
              else  
-             let $args := fold-left($step/*,(),function($exp){
-             ([local:printPath(<epath>{$exp,$context}</epath>,$static)/node()],',')})
+             let $args := fold-left($step/*,(),function($x,$y){
+             ([local:printPath(<epath>{$x,$context}</epath>,$static)/node()],',',$y)})
              return 
              <p>{substring-before(data($step/@name),"(") , "(" , $args , ")" }</p>
    else
@@ -1104,8 +1104,8 @@ declare function local:printPath($epath,$static)
              <sf>
                <fun>{data($step/@name)}</fun>,<args>{$args}</args></sf>
              else 
-             let $args := fold-left($step/*,(),function($exp){
-             ([local:printPath(<epath>{$exp,$context}</epath>,$static)/node()],',')})
+             let $args := fold-left($step/*,(),function($x,$y){
+             ([local:printPath(<epath>{$x,$context}</epath>,$static)/node()],',',$y)})
              return
              <sf>
                <fun>{data($step/@name)}</fun>,<args>{$args}</args></sf>
@@ -1265,6 +1265,7 @@ declare function local:tcalls($function,$trace,$static)
   else ()
 };
 
+(:
 declare function local:naive_strategy($query)
 {
   local:treecalls(function($x){$x},$query)
@@ -1293,8 +1294,6 @@ declare function local:first_small_path_strategy($query)
   count($ch/values/node()) ascending return $ch)},$query)
 };
 
- 
-(:
 local:naive_strategy("
 declare function local:title($last,$first)
 {
