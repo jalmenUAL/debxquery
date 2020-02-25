@@ -335,7 +335,7 @@ public class Debugger {
 				"<bib>\r\n" + 
 				"{\r\n" + 
 				"let $mylist := db:open('mylist')\r\n" + 
-				"for $t in distinct-values($mylist/title)\r\n" + 
+				"for $t in distinct-values($mylist/mylist/title)\r\n" + 
 				"let $d := local:data($t)\r\n" + 
 				"where exists($d)\r\n" + 
 				"return\r\n" + 
