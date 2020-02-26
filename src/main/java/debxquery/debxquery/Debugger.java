@@ -294,7 +294,7 @@ public class Debugger {
 		String running = "declare function local:min($t)\r\n" + 
 				"{\r\n" + 
 				"   let $prices := db:open('prices')\r\n" + 
-				"   let $p := $prices/prices/book[title = $t]/prices\r\n" + 
+				"   let $p := $prices/prices/book[title = $t]/price\r\n" + 
 				"   return min($p)\r\n" + 
 				"};\r\n" + 
 				"\r\n" + 
@@ -318,14 +318,14 @@ public class Debugger {
 				"declare function local:rate($rates)\r\n" + 
 				"{\r\n" + 
 				" let $n := count($rates)\r\n" + 
-				" return sum($rates) div $n\r\n" + 
+				" return sum($rates)" + 
 				"};\r\n" + 
 				"\r\n" + 
 				"declare function local:data($t)\r\n" + 
 				"{\r\n" + 
 				" for $b in db:open('bstore')/bstore/book[title=$t]\r\n" + 
 				" let $mr := local:rate($b/rate)\r\n" + 
-				" where $mr > 7\r\n" + 
+				" where $mr > 5\r\n" + 
 				" return\r\n" + 
 				" if ($b[editor]) then ($b/editor,$b/publisher,<mrate>{$mr}</mrate>)\r\n" + 
 				" else\r\n" + 
@@ -500,10 +500,17 @@ public class Debugger {
 				 
 				qsc.more();
 				String fun = qsc.next();
-				qsc.more();
-				String args = qsc.next(); 
+				
+				
+				//qsc.more();
+				//String args = qsc.next(); 
+				
 				System.out.println("This function call: "+fun);	 
-				System.out.println("with arguments: "+args);
+				System.out.println("with arguments: ");
+				while(qsc.more()) {
+				    String arg = qsc.next();
+					System.out.print(arg);		
+				}
 				
 				String values = "let $x:=" + next + "return $x/values/node()";
 				System.out.print(" equal to ");

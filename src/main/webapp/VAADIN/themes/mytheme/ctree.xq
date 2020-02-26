@@ -774,13 +774,13 @@ declare function local:Path($step,$context,$static)
    if (name($step)="Root") then "root()" 
    else
    if (name($step)="DbOpen") then 
-            "db:open('" || data($step/Str/@value) || "')"
+            "<root>{db:open('" || data($step/Str/@value) || "')}</root>"
    else
    if (name($step)="FnDoc") then 
-            "doc('" || data($step/Str/@value) || "')"
+            "<root>{doc('" || data($step/Str/@value) || "')}</root>"
    else
    if (name($step)="FnCollection") then 
-            "collection('" || data($step/Str/@value) || "')"
+            "<root>{collection('" || data($step/Str/@value) || "')}</root>"
    else
    if (name($step)="VarRef") then 
              let $varn := $step/Var/@name
@@ -788,8 +788,9 @@ declare function local:Path($step,$context,$static)
              let $path := 
              $con/path/node()
              return
-             serialize(<root>{$path}</root>, 
-             map {'method': 'xml' }) || "/node()"  
+                
+              serialize(<root>{$path}</root>, 
+             map {'method': 'xml' }) || "/node()" 
                        
    else
    if (name($step)="CachedPath") 
@@ -1065,8 +1066,7 @@ declare function local:printPath($epath,$static)
              if (empty($nodes)) then ["()"]
              else
              if (count($nodes)=1) then [$nodes]
-             else 
-             
+             else         
              ["(",
              fold-left($nodes,(),
              function($x,$y){
@@ -1075,16 +1075,15 @@ declare function local:printPath($epath,$static)
              ")"],   
              (),function($x,$y){if (empty($x)) then $y else ($x,",",$y)})
              return 
-             <p>{
+             <sf>{
              <fun>{substring-before(data($step/@name),"("),"(",$args,")"}</fun>
              /node()
-             }</p>
-             
+             }</sf>         
              else  
              let $args := fold-left($step/*,(),function($x,$y){
              ([local:printPath(<epath>{$x,$context}</epath>,$static)/node()],',',$y)})
              return 
-             <p>{substring-before(data($step/@name),"(") , "(" , $args , ")" }</p>
+             <sf>{substring-before(data($step/@name),"(") , "(" , $args , ")" }</sf>
    else
    if (name($step)="StaticFuncCall")  then 
              if ($step/../../values) then
@@ -1101,14 +1100,15 @@ declare function local:printPath($epath,$static)
              (),function($x,$y){if (empty($x)) then $y else ($x,",",$y)}),")"],   
              (),function($x,$y){if (empty($x)) then $y else ($x,",",$y)})
              return 
-             <sf>
-               <fun>{data($step/@name)}</fun>,<args>{$args}</args></sf>
+              <sf>
+               <fun>{data($step/@name)}</fun><args>{$args}</args></sf>
              else 
              let $args := fold-left($step/*,(),function($x,$y){
-             ([local:printPath(<epath>{$x,$context}</epath>,$static)/node()],',',$y)})
+             ([local:printPath(<epath>{$x,$context}</epath>,$static)/node()],",",$y)})
              return
              <sf>
-               <fun>{data($step/@name)}</fun>,<args>{$args}</args></sf>
+               <fun>{data($step/@name)}</fun><args>{$args}</args></sf>
+              
              
                       
    else 
@@ -1242,9 +1242,13 @@ declare function local:tcalls($function,$trace,$static)
        return
       <question nc ="{count($chs)+sum($chs/@nc)}">
       {$sc}
-        
-        
-      <values>{$values}</values>
+      { 
+      if (not ($values="")) then
+      if (count($values)=1 and name($values)="root") then
+      <values>{$values/node()}</values>
+      else <values>{$values}</values>
+      else <values>{$values}</values>
+      } 
        {
        $chs
        }
@@ -1265,65 +1269,7 @@ declare function local:tcalls($function,$trace,$static)
   else ()
 };
 
-(:
-declare function local:naive_strategy($query)
-{
-  local:treecalls(function($x){$x},$query)
-};
 
-declare function local:first_small_strategy($query)
-{
-  local:treecalls(function($x){for $ch in $x order by count($ch/values/node()) 
-ascending return $ch},$query)
-};
-
-declare function local:first_path_strategy($query)
-{
-  local:treecalls(function($x){($x[p],$x[not(p)])},$query)
-};
-
-declare function local:first_biggest_strategy($query)
-{
-  local:treecalls(function($x){for $ch in $x order by $ch/@nc descending return $ch  },$query)
-};
-
-declare function local:first_small_path_strategy($query)
-{
-  local:treecalls(function($x){(for $ch in $x where $ch[p] order by 
-  count($ch/values/node()) ascending return $ch,for $ch in $x where $ch[not(p)] order by 
-  count($ch/values/node()) ascending return $ch)},$query)
-};
-
-local:naive_strategy("
-declare function local:title($last,$first)
-{
-   for $b in db:open('bstore1')/bib/book
-                where some $ba in $b/author 
-                      satisfies ($ba/last = $last and $ba/first=$first)
-                return $b/title
-};
-
-<results>
-  {
-    let $a := db:open('bstore1')//author
-    for $last in distinct-values($a/last),
-        $first in distinct-values($a[last=$last]/first)
-    order by $last, $first
-    return
-        <result>
-            <author>
-               <last>{ $last }</last>
-               <first>{ $first }</first>
-            </author>
-            {
-               local:title($last,$first)
-            }
-        </result>
-  }
-</results>                                    
- "    
-  )
  
-:)
 
  
