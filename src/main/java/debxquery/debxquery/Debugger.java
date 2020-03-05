@@ -10,7 +10,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Scanner;
 
-import debxquery.debxquery.BaseXClient.Query;
+import trash.BaseXClient;
+import trash.BaseXClient.Query;
 
 public class Debugger {
 	

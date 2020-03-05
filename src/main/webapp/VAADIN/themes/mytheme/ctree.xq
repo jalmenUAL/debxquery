@@ -308,7 +308,7 @@ declare function local:Let($let,$groupby,$orderby,$where,$return,$context,$stati
   return
        <partial type="Bound">{$value}</partial> union
       <partial type="Let">   
-     
+     DEBXQUERY
       <partial type="where">{$where/values}</partial>
       <partial type="return">{$return/values}</partial></partial>
       union
@@ -1242,13 +1242,11 @@ declare function local:tcalls($function,$trace,$static)
        return
       <question nc ="{count($chs)+sum($chs/@nc)}">
       {$sc}
+      
       { 
-      if (not ($values="")) then
-      if (count($values)=1 and name($values)="root") then
-      <values>{$values/node()}</values>
-      else <values>{$values}</values>
-      else <values>{$values}</values>
-      } 
+       <values>{$values}</values>
+      }
+      
        {
        $chs
        }
@@ -1272,4 +1270,129 @@ declare function local:tcalls($function,$trace,$static)
 
  
 
+declare function local:naive($query)
+{
+  local:treecalls(function($x){$x},$query)
+};
+
+declare function local:first_paths($query)
+{
+  local:treecalls(function($x){($x[p],$x[sf])},$query)
+};
+
+declare function local:first_functions($query)
+{
+  local:treecalls(function($x){($x[sf],$x[p])},$query)
+};
+
+declare function local:only_functions($query)
+{
+  local:treecalls(function($x){($x[sf])},$query)
+};
+
+declare function local:heaviest_first($query)
+{
+  local:treecalls(function($x){for $ch in $x order by count($ch//question) descending return $ch},$query)
+};
+
+declare function local:lightest_result_first($query)
+{
+  local:treecalls(function($x){for $ch in $x order by count($ch/values//node()) 
+ascending return $ch},$query)
+};
+
+
+declare function local:divide_query($query)
+{
+  local:treecalls(function($x){
+             let $w := count($x//question)
+             let $m := $w div 2
+             let $bigger := 
+             (for $n in $x where count($n//question) > $m
+              order by count($n//question) descending return $n)
+             let $smaller := 
+             (for $n in $x where count($n//question) <= $m
+             order by count($n//question) descending
+             return $n)
+             let $pivot := head($smaller)
+             let $rest := tail($smaller)
+             return ($pivot,$rest,$bigger) 
+            },$query)
+};
+
+(:
+declare function local:heaviest_functions_first($query)
+{
+  local:treecalls(function($x){for $ch in $x order by count($ch//sf) descending return $ch},$query)
+};
+
+declare function local:heaviest_paths_first($query)
+{
+  local:treecalls(function($x){for $ch in $x order by count($ch//p) descending return $ch},$query)
+};
  
+
+local:treecalls(function($x){($x[sf])},"
+declare function local:min($t)
+{
+   let $prices := db:open('prices')
+   let $p := $prices/prices/book[title = $t]/price
+   return min($p)
+};
+
+declare function local:store($t,$p)
+{
+   let $prices := db:open('prices')
+   let $p := $prices/prices/book[title = $t and price=$p]
+   return $p/source
+};
+
+
+declare function local:min_price($t)
+{
+      let $min := local:min($t)
+      return
+      <minprice title='{$t}'>
+         {local:store($t,$min)}
+         <price>{local:min($t)}</price>
+      </minprice>
+};
+
+declare function local:rate($rates)
+{
+ let $n := count($rates)
+ return sum($rates) div $n
+};
+
+declare function local:data($t)
+{
+ for $b in db:open('bstore')/bstore/book[title=$t]
+ let $mr := local:rate($b/rate)
+ where  $mr > 5
+        return
+        if ($b[editor]) then ($b/editor,$b/publisher,<mrate>{$mr}</mrate>)
+        else
+          ($b/author[position()<=1],$b/publisher,<mrate>{$mr}</mrate>)
+};
+
+<bib>
+{
+
+let $mylist := db:open('mylist')
+for $t in distinct-values($mylist/mylist/title)
+let $d := local:data($t)
+where exists($d)
+return
+<book>{
+$d,
+local:min_price($t)
+}
+</book>
+}
+</bib>                                    
+ "    
+  )
+:) 
+
+
+  

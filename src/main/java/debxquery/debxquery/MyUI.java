@@ -85,7 +85,8 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
 
-import debxquery.debxquery.BaseXClient.Query;
+import trash.BaseXClient;
+import trash.BaseXClient.Query;
 
 @Theme("mytheme")
 public class MyUI extends UI{

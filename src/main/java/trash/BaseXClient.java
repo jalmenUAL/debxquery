@@ -1,4 +1,4 @@
-package debxquery.debxquery;
+package trash;
 
 import java.io.*;
 import java.net.*;

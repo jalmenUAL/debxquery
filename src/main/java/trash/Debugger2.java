@@ -1,4 +1,4 @@
-package debxquery.debxquery;
+package trash;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -10,7 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Scanner;
 
-import debxquery.debxquery.BaseXClient.Query;
+import trash.BaseXClient.Query;
 
 public class Debugger2 {
 	

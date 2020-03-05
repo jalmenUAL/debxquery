@@ -1,19 +1,18 @@
-package debxquery.debxquery;
+package trash;
 
-import java.io.IOException;
+import java.io.*;
 
-import debxquery.debxquery.BaseXClient.Query;
+import trash.BaseXClient.Query;
 
 /**
- * This example shows how queries can be executed in an iterative manner.
- * Iterative evaluation will be slower, as more server requests are performed.
+ * This example shows how external variables can be bound to XQuery expressions.
  *
  * This example requires a running database server instance.
  * Documentation: http://docs.basex.org/wiki/Clients
  *
  * @author BaseX Team 2005-19, BSD License
  */
-public final class QueryExample {
+public final class QueryBindExample {
   /**
    * Main method.
    * @param args command-line arguments
@@ -23,16 +22,15 @@ public final class QueryExample {
     // create session
     try(BaseXClient session = new BaseXClient("localhost", 1984, "admin", "admin")) {
       // create query instance
-      final String input = "for $i in 1 to 10 return <xml>Text { $i }</xml>";
+      final String input = "declare variable $name external; " +
+          "for $i in 1 to 10 return element { $name } { $i }";
 
       try(Query query = session.query(input)) {
-        // loop through all results
-        while(query.more()) {
-          System.out.println(query.next());
-        }
+        // bind variable
+        query.bind("$name", "number", "");
 
-        // print query info
-        System.out.println(query.info());
+        // print result
+        System.out.print(query.execute());
       }
     }
   }
