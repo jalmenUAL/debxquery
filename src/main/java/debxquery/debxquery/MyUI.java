@@ -71,6 +71,7 @@ import com.vaadin.ui.ItemCaptionGenerator;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Panel;
+import com.vaadin.ui.ProgressBar;
 import com.vaadin.ui.RadioButtonGroup;
 import com.vaadin.ui.RichTextArea;
 import com.vaadin.ui.TabSheet;
@@ -90,6 +91,7 @@ import trash.BaseXClient.Query;
 
 @Theme("mytheme")
 public class MyUI extends UI{
+	
 	
 	
 	Set<String> set = new HashSet<String>(); 
@@ -330,7 +332,14 @@ public class MyUI extends UI{
 	@Override
 	protected void init(VaadinRequest vaadinRequest) {		
 		
+		
+		
 		VerticalLayout main = new VerticalLayout();
+		
+		
+		
+		
+		
 		VerticalLayout query = new VerticalLayout();
 		VerticalLayout deb = new VerticalLayout();
 		main.setMargin(false);				
@@ -376,9 +385,12 @@ public class MyUI extends UI{
 	    queries.setItems("Example 1-Bug 1","Example 1-Bug 2","Example 1-Bug 3","Example 1-Bug 4","Example 1-Bug 5","Example 1-Bug 6",
 				"Example 2",
 				"Example 3", "Example 4",
-				"Example 5","Example 6");
+				"Example 5","Example 6",
+				"Example 7","Example 8","Example 9");
 		queries.setEmptySelectionCaption("Please select a query:");
 		queries.setWidth("100%");
+		queries.setPageLength(15);
+		
 		
 		strategies.setItems("Naive",
 				"Paths First",
@@ -391,6 +403,7 @@ public class MyUI extends UI{
 				);
 		strategies.setEmptySelectionCaption("Please select an strategy:");
 		strategies.setWidth("100%");
+		strategies.setPageLength(9);
 		
 		AceEditor strategycode = new AceEditor();
 		strategycode.setHeight("300px");
@@ -600,53 +613,141 @@ public class MyUI extends UI{
 				
 				};
 				if (event.getValue().equals("Example 2")) {
-					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example2b.xq");
+					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\paths-first.xq");
 					editor.setValue(p);
+					documents.removeAllComponents();
 					documents.removeAllComponents();
 					VerticalLayout doc1 = 
-							DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\owner.xml",
-									"owner");
+							DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+									"mylist");
 							VerticalLayout doc2 = 
-									DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\petOwner.xml",
-											"petOwner");
+									DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+											"bstore");
 							VerticalLayout doc3 = 
-									DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\pet.xml",
-											"pet");
-					   		documents.addTab(doc1, "owner", null);
-					   		documents.addTab(doc2, "petOwner", null);
-					   		documents.addTab(doc3, "pet", null);};
+									DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+											"prices");
+					   		documents.addTab(doc1, "mylist", null);
+					   		documents.addTab(doc2, "bstore", null);
+					   		documents.addTab(doc3, "prices", null);};
 				if (event.getValue().equals("Example 3")) {
-					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example3.xq");
+					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\functions-first.xq");
 					editor.setValue(p);	
 					documents.removeAllComponents();
-				VerticalLayout doc = 
-						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
-								"prices");
-				   		documents.addTab(doc, "prices", null);};
+					documents.removeAllComponents();
+					VerticalLayout doc1 = 
+							DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+									"mylist");
+							VerticalLayout doc2 = 
+									DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+											"bstore");
+							VerticalLayout doc3 = 
+									DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+											"prices");
+					   		documents.addTab(doc1, "mylist", null);
+					   		documents.addTab(doc2, "bstore", null);
+					   		documents.addTab(doc3, "prices", null);};
 				if (event.getValue().equals("Example 4")) {
-					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example4.xq");
+					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\heaviest-first.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
-				VerticalLayout doc = 
-						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml",
-								"bstore1");
-				   		documents.addTab(doc, "bstore1", null);};
+					documents.removeAllComponents();
+					VerticalLayout doc1 = 
+							DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+									"mylist");
+							VerticalLayout doc2 = 
+									DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+											"bstore");
+							VerticalLayout doc3 = 
+									DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+											"prices");
+					   		documents.addTab(doc1, "mylist", null);
+					   		documents.addTab(doc2, "bstore", null);
+					   		documents.addTab(doc3, "prices", null);};
 				if (event.getValue().equals("Example 5")) {
-					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example5.xq");
+					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\lightest-results-first.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
-				VerticalLayout doc = 
-						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml",
-								"bstore1");
-				   		documents.addTab(doc, "bstore1", null);};
+					documents.removeAllComponents();
+					VerticalLayout doc1 = 
+							DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+									"mylist");
+							VerticalLayout doc2 = 
+									DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+											"bstore");
+							VerticalLayout doc3 = 
+									DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+											"prices");
+					   		documents.addTab(doc1, "mylist", null);
+					   		documents.addTab(doc2, "bstore", null);
+					   		documents.addTab(doc3, "prices", null);};
 				if (event.getValue().equals("Example 6")) {
-					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example6.xq");
+					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\divide-query.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
-				VerticalLayout doc = 
-						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml",
-								"bstore1");
-				   		documents.addTab(doc, "bstore1", null);};
+					documents.removeAllComponents();
+					VerticalLayout doc1 = 
+							DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+									"mylist");
+							VerticalLayout doc2 = 
+									DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+											"bstore");
+							VerticalLayout doc3 = 
+									DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+											"prices");
+					   		documents.addTab(doc1, "mylist", null);
+					   		documents.addTab(doc2, "bstore", null);
+					   		documents.addTab(doc3, "prices", null);};
+				if (event.getValue().equals("Example 7")) {
+							String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\only-functions.xq");
+							editor.setValue(p);
+							documents.removeAllComponents();
+							documents.removeAllComponents();
+							VerticalLayout doc1 = 
+									DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\pet.xml",
+											"mylist");
+									VerticalLayout doc2 = 
+											DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\petOwner.xml",
+													"bstore");
+									VerticalLayout doc3 = 
+											DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\owner.xml",
+													"prices");
+							   		documents.addTab(doc1, "pet", null);
+							   		documents.addTab(doc2, "petOwner", null);
+							   		documents.addTab(doc3, "owner", null);};
+				if (event.getValue().equals("Example 8")) {
+							String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\heaviest-paths-first.xq");
+							editor.setValue(p);
+							documents.removeAllComponents();
+							documents.removeAllComponents();
+							VerticalLayout doc1 = 
+									DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+											"mylist");
+									VerticalLayout doc2 = 
+											DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+													"bstore");
+									VerticalLayout doc3 = 
+											DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+													"prices");
+							   		documents.addTab(doc1, "mylist", null);
+							   		documents.addTab(doc2, "bstore", null);
+							   		documents.addTab(doc3, "prices", null);};
+			    if (event.getValue().equals("Example 9")) {
+									String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\heaviest-functions-first.xq");
+									editor.setValue(p);
+									documents.removeAllComponents();
+									documents.removeAllComponents();
+									VerticalLayout doc1 = 
+											DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+													"mylist");
+											VerticalLayout doc2 = 
+													DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+															"bstore");
+											VerticalLayout doc3 = 
+													DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+															"prices");
+									   		documents.addTab(doc1, "mylist", null);
+									   		documents.addTab(doc2, "bstore", null);
+									   		documents.addTab(doc3, "prices", null);};
 			}
 		});
 		
@@ -710,41 +811,66 @@ public class MyUI extends UI{
 
 		debug_button.addClickListener(new Button.ClickListener() {
 			@Override
-			public void buttonClick(ClickEvent event) {				 
-				try (BaseXClient session = new BaseXClient("localhost", 1984, "admin", "admin")) {
-					String ctree = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\ctree.xq");				
-					String result = "";				
-					try (Query query = session.query(ctree+"\n"
-					+"<root>{local:treecalls("+strategycode.getValue()+",\""+editor.getValue().replace("\"","'")+"\")}</root>")) {		 
-						while (query.more()) {							
-							String next = query.next();		
-							result = result + next + "\n";
-						}	
-						System.out.println(result);
-						TreeGrid<NodeTree> tree = XMLtotree(result);		
-						tree.setSizeFull();
-						DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-				        DocumentBuilder dBuilder;
-						try {						
-							    set.clear();
-								tree.setHeight("800px");
-								deb.removeAllComponents();
-								deb.addComponent(tree);
-								main_tab.setSelectedTab(1);					    
-								TreeData<NodeTree> nodeTree = tree.getTreeData();
-								Integer size = nodeTree.getRootItems().size();
-								if (size>0) {
-								List<NodeTree> rootItems = nodeTree.getRootItems();
-							    selection(tree,rootItems,0,size,"Yes","main function");	}
-								else {print("Debugging error","The set of nodes is empty. Please select another strategy.");}
-						} catch (Exception e) {
-							error("Error",e.getMessage());
-						}					
-					}
-					 
-				} catch (IOException e) {
-					error("Error",e.getMessage());
-				}		
+			public void buttonClick(ClickEvent event) {		
+				
+				LoadingIndicatorWindow li = new LoadingIndicatorWindow();
+				addWindow(li);
+				
+				
+				class Loader implements Runnable {
+
+			        @Override
+			        public void run() {
+			            try {
+			            	try (BaseXClient session = new BaseXClient("localhost", 1984, "admin", "admin")) {
+								String ctree = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\ctree.xq");				
+								String result = "";				
+								try (Query query = session.query(ctree+"\n"
+								+"<root>{local:treecalls("+strategycode.getValue()+",\""+editor.getValue().replace("\"","'")+"\")}</root>")) {		 
+									while (query.more()) {							
+										String next = query.next();		
+										result = result + next + "\n";
+									}	
+									removeWindow(li);
+									System.out.println(result);
+									TreeGrid<NodeTree> tree = XMLtotree(result);		
+									tree.setSizeFull();
+									DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+							        DocumentBuilder dBuilder;
+									try {						
+										    set.clear();
+											tree.setHeight("800px");
+											deb.removeAllComponents();
+											deb.addComponent(tree);
+											main_tab.setSelectedTab(1);					    
+											TreeData<NodeTree> nodeTree = tree.getTreeData();
+											Integer size = nodeTree.getRootItems().size();
+											if (size>0) {
+											List<NodeTree> rootItems = nodeTree.getRootItems();
+										    selection(tree,rootItems,0,size,"Yes","main function");	}
+											else {print("Debugging error","The set of nodes is empty. Please select another strategy.");}
+									} catch (Exception e) {
+										error("Error",e.getMessage());
+									}					
+								}
+								 
+								
+								
+							} catch (IOException e) {
+								error("Error",e.getMessage());
+							}
+			               
+
+			            } catch (Exception e) {
+			                e.printStackTrace();
+			            }
+			            finally {
+			                removeWindow(li);
+			            }
+			        }
+			 }
+				new Thread(new Loader()).start();	
+						
 				
 			}
 		});

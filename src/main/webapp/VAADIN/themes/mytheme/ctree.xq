@@ -308,7 +308,7 @@ declare function local:Let($let,$groupby,$orderby,$where,$return,$context,$stati
   return
        <partial type="Bound">{$value}</partial> union
       <partial type="Let">   
-     DEBXQUERY
+     
       <partial type="where">{$where/values}</partial>
       <partial type="return">{$return/values}</partial></partial>
       union
@@ -735,7 +735,25 @@ let $args := $exp/*
 let $cargs := count($args)
 let $staticfun := $static[@name=$name]
 return
-if ($cargs=0) then local:exp($staticfun/*,$context,$static)
+if ($cargs=0) then
+let $fexp :=  local:exp($staticfun/*,$context,$static)
+return
+<StaticFuncCall>
+{<values> 
+{
+<partial type="StaticFuncCall">
+{
+<epath>{$exp,$context}</epath>,
+$fexp/values
+}</partial>
+
+union
+($fexp/values/value)
+}</values>
+}</StaticFuncCall>
+
+
+ 
 else
 let $gflwor := 
 local:GFLWOR(
@@ -1237,20 +1255,16 @@ declare function local:tcalls($function,$trace,$static)
       if (not($sc="()")) then
       let $chs :=  $function(for-each($trace/values,
        function($x){local:tcalls($function,$x,
-       $static)})) 
-       
+       $static)}))     
        return
       <question nc ="{count($chs)+sum($chs/@nc)}">
       {$sc}
-      
       { 
-       <values>{$values}</values>
-      }
-      
+      <values>{$values}</values>     
+      }    
        {
        $chs
-       }
-       
+       }     
       </question>  
       else ()
   else 
@@ -1320,7 +1334,6 @@ declare function local:divide_query($query)
             },$query)
 };
 
-(:
 declare function local:heaviest_functions_first($query)
 {
   local:treecalls(function($x){for $ch in $x order by count($ch//sf) descending return $ch},$query)
@@ -1331,68 +1344,64 @@ declare function local:heaviest_paths_first($query)
   local:treecalls(function($x){for $ch in $x order by count($ch//p) descending return $ch},$query)
 };
  
+(:
+local:treecalls(function($x){$x[sf]},"
+(: Bug: $ao1/species = 'dog' and $ao2/species = 'cat' :)
 
-local:treecalls(function($x){($x[sf])},"
-declare function local:min($t)
-{
-   let $prices := db:open('prices')
-   let $p := $prices/prices/book[title = $t]/price
-   return min($p)
+
+declare function local:AnimalOwner(){
+for $o in db:open('owner')/owners/owner
+for $p in db:open('pet')/pets/pet
+for $po in db:open('petOwner')/petOwners/petOwner 
+where ($o/id = $po/id) and ($p/code = $po/code) 
+return <animalOwner>{($o/id, $p/name, $p/species)}</animalOwner>
 };
 
-declare function local:store($t,$p)
-{
-   let $prices := db:open('prices')
-   let $p := $prices/prices/book[title = $t and price=$p]
-   return $p/source
+declare function local:LessThan6(){
+  for $ao in local:AnimalOwner()
+  where $ao/species = 'cat' or $ao/species = 'dog' 
+  and count($ao/id) < 6 
+  group by $id := $ao/id
+  return <lessThan6><id>{$id}</id></lessThan6>
 };
 
-
-declare function local:min_price($t)
-{
-      let $min := local:min($t)
-      return
-      <minprice title='{$t}'>
-         {local:store($t,$min)}
-         <price>{local:min($t)}</price>
-      </minprice>
+declare function local:CatsAndDogsOwner(){
+   let $ao := local:AnimalOwner()
+   for $ao1 in $ao 
+   for $ao2 in $ao 
+   where $ao1/id = $ao2/id and $ao1/species = 'dog' and $ao2/species = 'cat' 
+   return (<catsAndDogsOwner>{$ao1/id, $ao1/name}</catsAndDogsOwner>,
+           <catsAndDogsOwner>{$ao2/id, $ao2/name}</catsAndDogsOwner>)
+            
 };
 
-declare function local:rate($rates)
-{
- let $n := count($rates)
- return sum($rates) div $n
+declare function local:NoCommonName(){
+   let $cado := local:CatsAndDogsOwner()
+   let $seq1 := $cado/id 
+   let $seq2 := (for $cdo1 in $cado 
+                 for $cdo2 in $cado
+                 where not($cdo1/id = $cdo2/id) and ($cdo1/name = $cdo2/name)        
+                 return $cdo1/id)
+   return <noCommonName>
+          <id>{distinct-values($seq1[not(. = $seq2)]/text())}</id>
+          </noCommonName>
+          
 };
 
-declare function local:data($t)
-{
- for $b in db:open('bstore')/bstore/book[title=$t]
- let $mr := local:rate($b/rate)
- where  $mr > 5
-        return
-        if ($b[editor]) then ($b/editor,$b/publisher,<mrate>{$mr}</mrate>)
-        else
-          ($b/author[position()<=1],$b/publisher,<mrate>{$mr}</mrate>)
+declare function local:Guest(){
+  for $o in  db:open('owner')/owners/owner
+  let $c :=  (for $n in local:NoCommonName()
+                 for $l in local:LessThan6()
+                 where $l/id=$n/id  
+                 return $n/id )
+  where $o/id  = $c
+  return <guest>{$o/id, $o/name}</guest>
 };
 
-<bib>
-{
-
-let $mylist := db:open('mylist')
-for $t in distinct-values($mylist/mylist/title)
-let $d := local:data($t)
-where exists($d)
-return
-<book>{
-$d,
-local:min_price($t)
-}
-</book>
-}
-</bib>                                    
+local:Guest()                                    
  "    
   )
-:) 
+ :)
 
 
-  
+ 
