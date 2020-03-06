@@ -1,9 +1,9 @@
-(: Bug 1 : $prices/prices/book[title = $t]/prices) :)
+(: Bug 5 : $mr > 8 :)
 
 declare function local:min($t)
 {
    let $prices := db:open('prices')
-   let $p := $prices/prices/book[title = $t]/prices
+   let $p := $prices/prices/book[title = $t]/price
    return min($p)
 };
 
@@ -35,7 +35,7 @@ declare function local:data($t)
 {
  for $b in db:open('bstore')/bstore/book[title=$t]
  let $mr := local:rate($b/rate)
- where  $mr > 5
+ where  $mr > 8
         return
         if ($b[editor]) then ($b/editor,$b/publisher,<mrate>{$mr}</mrate>)
         else

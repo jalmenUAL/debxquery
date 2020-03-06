@@ -1,9 +1,9 @@
-(: Bug 1 : $prices/prices/book[title = $t]/prices) :)
+(: Bug 3 : sum($rates) :)
 
 declare function local:min($t)
 {
    let $prices := db:open('prices')
-   let $p := $prices/prices/book[title = $t]/prices
+   let $p := $prices/prices/book[title = $t]/price
    return min($p)
 };
 
@@ -28,7 +28,7 @@ declare function local:min_price($t)
 declare function local:rate($rates)
 {
  let $n := count($rates)
- return sum($rates) div $n
+ return sum($rates) 
 };
 
 declare function local:data($t)

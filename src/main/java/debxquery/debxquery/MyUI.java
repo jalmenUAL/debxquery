@@ -373,7 +373,7 @@ public class MyUI extends UI{
 			                tabsheet.setSelectedTab(tab);		       		
 			               }
 			       }}});		
-	    queries.setItems("Example 1",
+	    queries.setItems("Example 1-Bug 1","Example 1-Bug 2","Example 1-Bug 3","Example 1-Bug 4","Example 1-Bug 5","Example 1-Bug 6",
 				"Example 2",
 				"Example 3", "Example 4",
 				"Example 5","Example 6");
@@ -485,8 +485,103 @@ public class MyUI extends UI{
 			if (event.getSource().isEmpty()) {
 				error("", "Empty Selection. Please select a query.");
 			} else {			 
-				if (event.getValue().equals("Example 1")) {
+				if (event.getValue().equals("Example 1-Bug 1")) {
 					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example1-bug1.xq");
+					editor.setValue(p);
+				documents.removeAllComponents();
+				documents.removeAllComponents();
+				VerticalLayout doc1 = 
+				DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+						"mylist");
+				VerticalLayout doc2 = 
+						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+								"bstore");
+				VerticalLayout doc3 = 
+						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+								"prices");
+		   		documents.addTab(doc1, "mylist", null);
+		   		documents.addTab(doc2, "bstore", null);
+		   		documents.addTab(doc3, "prices", null);
+				
+				};
+				if (event.getValue().equals("Example 1-Bug 2")) {
+					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example1-bug2.xq");
+					editor.setValue(p);
+				documents.removeAllComponents();
+				documents.removeAllComponents();
+				VerticalLayout doc1 = 
+				DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+						"mylist");
+				VerticalLayout doc2 = 
+						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+								"bstore");
+				VerticalLayout doc3 = 
+						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+								"prices");
+		   		documents.addTab(doc1, "mylist", null);
+		   		documents.addTab(doc2, "bstore", null);
+		   		documents.addTab(doc3, "prices", null);
+				
+				};
+				if (event.getValue().equals("Example 1-Bug 3")) {
+					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example1-bug3.xq");
+					editor.setValue(p);
+				documents.removeAllComponents();
+				documents.removeAllComponents();
+				VerticalLayout doc1 = 
+				DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+						"mylist");
+				VerticalLayout doc2 = 
+						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+								"bstore");
+				VerticalLayout doc3 = 
+						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+								"prices");
+		   		documents.addTab(doc1, "mylist", null);
+		   		documents.addTab(doc2, "bstore", null);
+		   		documents.addTab(doc3, "prices", null);
+				
+				};
+				if (event.getValue().equals("Example 1-Bug 4")) {
+					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example1-bug4.xq");
+					editor.setValue(p);
+				documents.removeAllComponents();
+				documents.removeAllComponents();
+				VerticalLayout doc1 = 
+				DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+						"mylist");
+				VerticalLayout doc2 = 
+						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+								"bstore");
+				VerticalLayout doc3 = 
+						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+								"prices");
+		   		documents.addTab(doc1, "mylist", null);
+		   		documents.addTab(doc2, "bstore", null);
+		   		documents.addTab(doc3, "prices", null);
+				
+				};
+				if (event.getValue().equals("Example 1-Bug 5")) {
+					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example1-bug5.xq");
+					editor.setValue(p);
+				documents.removeAllComponents();
+				documents.removeAllComponents();
+				VerticalLayout doc1 = 
+				DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+						"mylist");
+				VerticalLayout doc2 = 
+						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+								"bstore");
+				VerticalLayout doc3 = 
+						DocPanel("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+								"prices");
+		   		documents.addTab(doc1, "mylist", null);
+		   		documents.addTab(doc2, "bstore", null);
+		   		documents.addTab(doc3, "prices", null);
+				
+				};
+				if (event.getValue().equals("Example 1-Bug 6")) {
+					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example1-bug6.xq");
 					editor.setValue(p);
 				documents.removeAllComponents();
 				documents.removeAllComponents();

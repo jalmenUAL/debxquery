@@ -1,9 +1,9 @@
-(: Bug 1 : $prices/prices/book[title = $t]/prices) :)
+(: Bug 6 : distinct-values($mylist/mylist/title) :)
 
 declare function local:min($t)
 {
    let $prices := db:open('prices')
-   let $p := $prices/prices/book[title = $t]/prices
+   let $p := $prices/prices/book[title = $t]/price
    return min($p)
 };
 

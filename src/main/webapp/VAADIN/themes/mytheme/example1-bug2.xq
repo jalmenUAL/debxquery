@@ -1,9 +1,9 @@
-(: Bug 1 : $prices/prices/book[title = $t]/prices) :)
+(: Bug 2 : $prices/prices/book[title = $t]/year) :)
 
 declare function local:min($t)
 {
    let $prices := db:open('prices')
-   let $p := $prices/prices/book[title = $t]/prices
+   let $p := $prices/prices/book[title = $t]/year
    return min($p)
 };
 
