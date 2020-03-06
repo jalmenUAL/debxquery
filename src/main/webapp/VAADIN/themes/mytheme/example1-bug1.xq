@@ -1,14 +1,16 @@
+(: Bug 1 : $prices/prices/book[title = $t]/year) :)
+
 declare function local:min($t)
 {
    let $prices := db:open('prices')
-   let $p := $prices//book[title = $t]/year
+   let $p := $prices/prices/book[title = $t]/year
    return min($p)
 };
 
 declare function local:store($t,$p)
 {
    let $prices := db:open('prices')
-   let $p := $prices//book[title = $t and price=$p]
+   let $p := $prices/prices/book[title = $t and price=$p]
    return $p/source
 };
 
@@ -31,7 +33,7 @@ declare function local:rate($rates)
 
 declare function local:data($t)
 {
- for $b in db:open('bstore')//book[title=$t]
+ for $b in db:open('bstore')/bstore/book[title=$t]
  let $mr := local:rate($b/rate)
  where  $mr < 0
         return
@@ -44,7 +46,7 @@ declare function local:data($t)
 {
 
 let $mylist := db:open('mylist')
-for $t in distinct-values($mylist//title)
+for $t in distinct-values($mylist/mylist/title)
 let $d := local:data($t)
 where exists($d)
 return

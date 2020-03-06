@@ -1275,12 +1275,12 @@ declare function local:naive($query)
   local:treecalls(function($x){$x},$query)
 };
 
-declare function local:first_paths($query)
+declare function local:paths_first($query)
 {
   local:treecalls(function($x){($x[p],$x[sf])},$query)
 };
 
-declare function local:first_functions($query)
+declare function local:functions_first($query)
 {
   local:treecalls(function($x){($x[sf],$x[p])},$query)
 };
@@ -1295,7 +1295,7 @@ declare function local:heaviest_first($query)
   local:treecalls(function($x){for $ch in $x order by count($ch//question) descending return $ch},$query)
 };
 
-declare function local:lightest_result_first($query)
+declare function local:lightest_results_first($query)
 {
   local:treecalls(function($x){for $ch in $x order by count($ch/values//node()) 
 ascending return $ch},$query)

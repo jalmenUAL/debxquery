@@ -211,6 +211,7 @@ public class MyUI extends UI{
 	        	    Element Element = (Element) node;
 	        	    String tag = Element.getTagName();        	    
 	        	    String text = Element.getTextContent();  
+	        	    if (text.equals(""))  text="()";
 	        	    String content = text_content(Element);
 	        	    if (set.contains(text)) {}
 	        	    else
@@ -236,7 +237,9 @@ public class MyUI extends UI{
 	        	    	else 
 	        	    	{sfp = new NodeTree("with arguments",null,null);}
 	        	    	}
-	        	    	else if (tag.equals("values")) { if (leaf_node(Element)) {sfp = new NodeTree("equal to",text,null);} 
+	        	    	else if (tag.equals("values")) { if (leaf_node(Element)) {
+	        	    		{sfp = new NodeTree("equal to",text,null);}
+	        	    		} 
 	        	    	else {sfp = new NodeTree("equal to",null,null);}}    	    	
 	        	    	else if (leaf_node(Element)) {sfp = new NodeTree(tag,text,null);} else {sfp = new NodeTree(tag,null,null);}}	        	             	     
 	        	    	 List<NodeTree> listch =addChildrenToTree(node.getChildNodes());
@@ -377,15 +380,31 @@ public class MyUI extends UI{
 		queries.setEmptySelectionCaption("Please select a query:");
 		queries.setWidth("100%");
 		
-		strategies.setItems("Naive Strategy",
-				"Smallest Results First",
-				"Paths First", "Biggest Subtrees First",
-				"Smalles Results and Paths First");
+		strategies.setItems("Naive",
+				"Paths First",
+				"Functions First", "Only Functions",
+				"Heaviest First",
+				"Lightest Results First",
+				"Divide and Query",
+				"Heaviest Paths First",
+				"Heaviest Functions First"
+				);
 		strategies.setEmptySelectionCaption("Please select an strategy:");
 		strategies.setWidth("100%");
 		
-		TextField strategycode = new TextField("Strategy Code");
+		AceEditor strategycode = new AceEditor();
+		strategycode.setHeight("300px");
 		strategycode.setWidth("100%");
+		strategycode.setFontSize("12pt");
+		strategycode.setMode(AceMode.xquery);
+		strategycode.setTheme(AceTheme.eclipse);
+		strategycode.setUseWorker(true);
+		strategycode.setReadOnly(false);
+		strategycode.setShowInvisibles(false);
+		strategycode.setShowGutter(false);
+		strategycode.setUseSoftTabs(false);
+		strategycode.setShowPrintMargin(false);
+		strategycode.setWordWrap(true);
 		strategycode.setValue("function($x){$x}");
 		
 		
@@ -467,7 +486,7 @@ public class MyUI extends UI{
 				error("", "Empty Selection. Please select a query.");
 			} else {			 
 				if (event.getValue().equals("Example 1")) {
-					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example1.xq");
+					String p = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example1-bug1.xq");
 					editor.setValue(p);
 				documents.removeAllComponents();
 				documents.removeAllComponents();
@@ -540,16 +559,37 @@ public class MyUI extends UI{
 			if (event.getSource().isEmpty()) {
 				error("", "Empty Selection. Please select an strategy.");
 			} else {	
-				if (event.getValue().equals("Naive Strategy")) { strategycode.setValue("function($x){$x}");};
-				if (event.getValue().equals("Smallest Results First")) {strategycode.setValue("function($x){for $ch in $x order by count($ch/values/node())\r\n" + 
-						"ascending return $ch}");};
-				if (event.getValue().equals("Paths First")) {strategycode.setValue("function($x){($x[p],$x[not(p)])}");};
-				if (event.getValue().equals("Biggest Subtrees First")) {strategycode.setValue("function($x){for $ch in $x order by $ch/@nc descending return $ch  }");};
-				if (event.getValue().equals("Smalles Results and Paths First")) {strategycode.setValue("function($x){(for $ch in $x where $ch[p] order by\r\n" + 
-						"  count($ch/values/node()) ascending return $ch,for $ch in $x where $ch[not(p)] order by\r\n" + 
-						"  count($ch/values/node()) ascending return $ch)}");};
-				
-				
+				if (event.getValue().equals("Naive")) { strategycode.setValue("function($x){$x}");};
+				if (event.getValue().equals("Paths First")) {strategycode.setValue(
+						"function($x){($x[p],$x[sf])}");};
+				if (event.getValue().equals("Functions First")) {strategycode.setValue("function($x){($x[sf],$x[p])}");};
+				if (event.getValue().equals("Only Functions")) {strategycode.setValue("function($x){($x[sf])}");};
+				if (event.getValue().equals("Heaviest First")) {strategycode.setValue("function($x){for $ch in $x "
+						+ "order by count($ch//question) descending "
+						+ "return $ch}");};
+				if (event.getValue().equals("Lightest Results First")) {strategycode.setValue("function($x){for $ch in $x "
+						+ "order by count($ch//question) descending "
+						+ "return $ch}");};
+				if (event.getValue().equals("Divide and Query")) {strategycode.setValue("function($x){\r\n" + 
+						"let $w := count($x//question)\r\n" + 
+						"let $m := $w div 2\r\n" + 
+						"let $bigger := \r\n" + 
+						"(for $n in $x where count($n//question) > $m\r\n" + 
+						"order by count($n//question) descending return $n)\r\n" + 
+						"let $smaller := \r\n" + 
+						"(for $n in $x where count($n//question) <= $m\r\n" + 
+						"order by count($n//question) descending\r\n" + 
+						"return $n)\r\n" + 
+						"let $pivot := head($smaller)\r\n" + 
+						"let $rest := tail($smaller)\r\n" + 
+						"return ($pivot,$rest,$bigger) \r\n" + 
+						"}");};
+				if (event.getValue().equals("Heaviest Paths First")) {strategycode.setValue("function($x){for $ch in $x "
+						+ "order by count($ch//sf) descending "
+						+ "return $ch}");};
+				if (event.getValue().equals("Heaviest Functions First")) {strategycode.setValue("function($x){for $ch in $x "
+						+ "order by count($ch//p) descending "
+						+ "return $ch}");};
 			}
 		});
 		
@@ -598,8 +638,10 @@ public class MyUI extends UI{
 								main_tab.setSelectedTab(1);					    
 								TreeData<NodeTree> nodeTree = tree.getTreeData();
 								Integer size = nodeTree.getRootItems().size();
+								if (size>0) {
 								List<NodeTree> rootItems = nodeTree.getRootItems();
-							    selection(tree,rootItems,0,size,"Yes","main function");						    
+							    selection(tree,rootItems,0,size,"Yes","main function");	}
+								else {print("Debugging error","The set of nodes is empty. Please select another strategy.");}
 						} catch (Exception e) {
 							error("Error",e.getMessage());
 						}					
