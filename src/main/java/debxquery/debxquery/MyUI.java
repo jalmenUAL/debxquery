@@ -474,7 +474,13 @@ public class MyUI extends UI{
 		debug_button.setStyleName(ValoTheme.BUTTON_PRIMARY);
 		debug_button.setIcon(VaadinIcons.TOOLS);		
 		 
+		//NEW
+		ProgressBar progressBar = new ProgressBar();
+		progressBar.setCaption("Loading...");
+        progressBar.setIndeterminate(true);
+        progressBar.setVisible(true);
 		
+        
 		strategycode.addValueChangeListener(new com.vaadin.data.HasValue.ValueChangeListener<String>() {
 			@Override
 			public void valueChange(com.vaadin.data.HasValue.ValueChangeEvent<String> event) {			
@@ -813,63 +819,57 @@ public class MyUI extends UI{
 			@Override
 			public void buttonClick(ClickEvent event) {		
 				
-				LoadingIndicatorWindow li = new LoadingIndicatorWindow();
-				addWindow(li);
-				
-				
-				class Loader implements Runnable {
+				new Thread(() -> {
+		           
 
-			        @Override
-			        public void run() {
-			            try {
-			            	try (BaseXClient session = new BaseXClient("localhost", 1984, "admin", "admin")) {
-								String ctree = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\ctree.xq");				
-								String result = "";				
-								try (Query query = session.query(ctree+"\n"
-								+"<root>{local:treecalls("+strategycode.getValue()+",\""+editor.getValue().replace("\"","'")+"\")}</root>")) {		 
-									while (query.more()) {							
-										String next = query.next();		
-										result = result + next + "\n";
-									}	
-									removeWindow(li);
-									System.out.println(result);
-									TreeGrid<NodeTree> tree = XMLtotree(result);		
-									tree.setSizeFull();
-									DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-							        DocumentBuilder dBuilder;
-									try {						
-										    set.clear();
-											tree.setHeight("800px");
-											deb.removeAllComponents();
-											deb.addComponent(tree);
-											main_tab.setSelectedTab(1);					    
-											TreeData<NodeTree> nodeTree = tree.getTreeData();
-											Integer size = nodeTree.getRootItems().size();
-											if (size>0) {
-											List<NodeTree> rootItems = nodeTree.getRootItems();
-										    selection(tree,rootItems,0,size,"Yes","main function");	}
-											else {print("Debugging error","The set of nodes is empty. Please select another strategy.");}
-									} catch (Exception e) {
-										error("Error",e.getMessage());
-									}					
-								}
+		            // this is needed because we are modifying the UI from a different thread:
+		            UI.getCurrent().access(() -> {
+		                progressBar.setVisible(false);
+		                try (BaseXClient session = new BaseXClient("localhost", 1984, "admin", "admin")) {
+							String ctree = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\ctree.xq");				
+							String result = "";
+							try (Query query = session.query(ctree+"\n"
+							+"<root>{local:treecalls("+strategycode.getValue()+",\""+editor.getValue().replace("\"","'")+"\")}</root>")) {		 
+								while (query.more()) {							
+									String next = query.next();		
+									result = result + next + "\n";
+								}	
 								 
-								
-								
-							} catch (IOException e) {
-								error("Error",e.getMessage());
+								System.out.println(result);
+								TreeGrid<NodeTree> tree = XMLtotree(result);		
+								tree.setSizeFull();
+								DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+						        DocumentBuilder dBuilder;
+								try {						
+									    set.clear();
+										tree.setHeight("800px");
+										deb.removeAllComponents();
+										deb.addComponent(tree);
+										main_tab.setSelectedTab(1);					    
+										TreeData<NodeTree> nodeTree = tree.getTreeData();
+										Integer size = nodeTree.getRootItems().size();
+										if (size>0) {
+										List<NodeTree> rootItems = nodeTree.getRootItems();
+									    selection(tree,rootItems,0,size,"Yes","main function");	}
+										else {print("Debugging error","The set of nodes is empty. Please select another strategy.");}
+								} catch (Exception e) {
+									error("Error",e.getMessage());
+								}					
 							}
+							 
+							
+						} catch (IOException e) {
+							error("Error",e.getMessage());
+						}
+		                progressBar.setVisible(false);
+		            });
+		        }).start();
+				 
+			            	
 			               
 
-			            } catch (Exception e) {
-			                e.printStackTrace();
-			            }
-			            finally {
-			                removeWindow(li);
-			            }
-			        }
-			 }
-				new Thread(new Loader()).start();	
+			            	
+				
 						
 				
 			}
@@ -883,6 +883,11 @@ public class MyUI extends UI{
 		query.addComponent(documents); 
 		query.addComponent(edS);
 		query.addComponent(debug_button);
+		
+		//NEW
+		query.addComponent(progressBar);
+		progressBar.setVisible(false);
+		
 		query.addComponent(strategies);
 		query.addComponent(strategycode);
 		query.addComponent(run_button);
