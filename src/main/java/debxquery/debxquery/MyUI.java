@@ -1,13 +1,16 @@
 package debxquery.debxquery;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -69,6 +72,8 @@ public class MyUI extends UI {
 	TabSheet documents = new TabSheet();
 
 	public String load(String filename) {
+		
+		load_url("http://minerva.ual.es:8080/debxquery/"+filename,filename);
 		String fileAsString = "";
 		InputStream is;
 		try {
@@ -91,6 +96,20 @@ public class MyUI extends UI {
 			error("Error", e.getMessage());
 		}
 		return fileAsString;
+	}
+	
+	public void load_url(String url,String file)
+	{
+		try (BufferedInputStream in = new BufferedInputStream(new URL(url).openStream());
+				  FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+				    byte dataBuffer[] = new byte[1024];
+				    int bytesRead;
+				    while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
+				        fileOutputStream.write(dataBuffer, 0, bytesRead);
+				    }
+				} catch (IOException e) {
+				    // handle exception
+				}
 	}
 
 	public TreeGrid<NodeTree> XMLtotree(String xml) {
@@ -250,6 +269,7 @@ public class MyUI extends UI {
 
 	public VerticalLayout DocPanel(String file, String database) {
 
+		load_url("http://minerva.ual.es:8080/debxquery/"+file,file);
 		VerticalLayout firstdocument = new VerticalLayout();
 		HorizontalLayout dbl = new HorizontalLayout();
 		dbl.setWidth("100%");
@@ -343,8 +363,9 @@ public class MyUI extends UI {
 		ComboBox<String> queries = new ComboBox<String>("Examples of Queries");
 		ComboBox<String> strategies = new ComboBox<String>("Strategies");
 
+		load_url("http://minerva.ual.es:8080/debxquery/bstore1.xml","bstore1.xml");
 		VerticalLayout firstdocument = DocPanel(
-				"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore1.xml",
+				"bstore1.xml",
 				"bstore1");
 		VerticalLayout seconddocument = DocPanel("", "");
 		documents.addTab(firstdocument, "bstore1", null);
@@ -419,8 +440,9 @@ public class MyUI extends UI {
 		editor.setShowPrintMargin(false);
 		editor.setWordWrap(true);
 
+		
 		String input = load(
-				"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\q1.xq");
+				"q1.xq");
 		editor.setValue(input);
 
 		AceEditor resulte = new AceEditor();
@@ -478,18 +500,18 @@ public class MyUI extends UI {
 			} else {
 				if (event.getValue().equals("Example 1-Bug 1")) {
 					String p = load(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example1-bug1.xq");
+							"example1-bug1.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
 					documents.removeAllComponents();
 					VerticalLayout doc1 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+							"mylist.xml",
 							"mylist");
 					VerticalLayout doc2 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+							"bstore.xml",
 							"bstore");
 					VerticalLayout doc3 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+							"prices.xml",
 							"prices");
 					documents.addTab(doc1, "mylist", null);
 					documents.addTab(doc2, "bstore", null);
@@ -499,18 +521,18 @@ public class MyUI extends UI {
 				;
 				if (event.getValue().equals("Example 1-Bug 2")) {
 					String p = load(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example1-bug2.xq");
+							"example1-bug2.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
 					documents.removeAllComponents();
 					VerticalLayout doc1 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+							"mylist.xml",
 							"mylist");
 					VerticalLayout doc2 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+							"bstore.xml",
 							"bstore");
 					VerticalLayout doc3 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+							"prices.xml",
 							"prices");
 					documents.addTab(doc1, "mylist", null);
 					documents.addTab(doc2, "bstore", null);
@@ -520,18 +542,18 @@ public class MyUI extends UI {
 				;
 				if (event.getValue().equals("Example 1-Bug 3")) {
 					String p = load(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example1-bug3.xq");
+							"example1-bug3.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
 					documents.removeAllComponents();
 					VerticalLayout doc1 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+							"mylist.xml",
 							"mylist");
 					VerticalLayout doc2 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+							"bstore.xml",
 							"bstore");
 					VerticalLayout doc3 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+							"prices.xml",
 							"prices");
 					documents.addTab(doc1, "mylist", null);
 					documents.addTab(doc2, "bstore", null);
@@ -541,18 +563,18 @@ public class MyUI extends UI {
 				;
 				if (event.getValue().equals("Example 1-Bug 4")) {
 					String p = load(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example1-bug4.xq");
+							"example1-bug4.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
 					documents.removeAllComponents();
 					VerticalLayout doc1 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+							"mylist.xml",
 							"mylist");
 					VerticalLayout doc2 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+							"bstore.xml",
 							"bstore");
 					VerticalLayout doc3 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+							"prices.xml",
 							"prices");
 					documents.addTab(doc1, "mylist", null);
 					documents.addTab(doc2, "bstore", null);
@@ -562,18 +584,18 @@ public class MyUI extends UI {
 				;
 				if (event.getValue().equals("Example 1-Bug 5")) {
 					String p = load(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example1-bug5.xq");
+							"example1-bug5.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
 					documents.removeAllComponents();
 					VerticalLayout doc1 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+							"mylist.xml",
 							"mylist");
 					VerticalLayout doc2 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+							"bstore.xml",
 							"bstore");
 					VerticalLayout doc3 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+							"prices.xml",
 							"prices");
 					documents.addTab(doc1, "mylist", null);
 					documents.addTab(doc2, "bstore", null);
@@ -583,18 +605,18 @@ public class MyUI extends UI {
 				;
 				if (event.getValue().equals("Example 1-Bug 6")) {
 					String p = load(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\example1-bug6.xq");
+							"example1-bug6.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
 					documents.removeAllComponents();
 					VerticalLayout doc1 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+							"mylist.xml",
 							"mylist");
 					VerticalLayout doc2 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+							"bstore.xml",
 							"bstore");
 					VerticalLayout doc3 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+							"prices.xml",
 							"prices");
 					documents.addTab(doc1, "mylist", null);
 					documents.addTab(doc2, "bstore", null);
@@ -604,18 +626,18 @@ public class MyUI extends UI {
 				;
 				if (event.getValue().equals("Example 2")) {
 					String p = load(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\paths-first.xq");
+							"paths-first.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
 					documents.removeAllComponents();
 					VerticalLayout doc1 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+							"mylist.xml",
 							"mylist");
 					VerticalLayout doc2 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+							"bstore.xml",
 							"bstore");
 					VerticalLayout doc3 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+							"prices.xml",
 							"prices");
 					documents.addTab(doc1, "mylist", null);
 					documents.addTab(doc2, "bstore", null);
@@ -624,18 +646,18 @@ public class MyUI extends UI {
 				;
 				if (event.getValue().equals("Example 3")) {
 					String p = load(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\functions-first.xq");
+							"functions-first.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
 					documents.removeAllComponents();
 					VerticalLayout doc1 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+							"mylist.xml",
 							"mylist");
 					VerticalLayout doc2 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+							"bstore.xml",
 							"bstore");
 					VerticalLayout doc3 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+							"prices.xml",
 							"prices");
 					documents.addTab(doc1, "mylist", null);
 					documents.addTab(doc2, "bstore", null);
@@ -644,18 +666,18 @@ public class MyUI extends UI {
 				;
 				if (event.getValue().equals("Example 4")) {
 					String p = load(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\heaviest-first.xq");
+							"heaviest-first.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
 					documents.removeAllComponents();
 					VerticalLayout doc1 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+							"mylist.xml",
 							"mylist");
 					VerticalLayout doc2 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+							"bstore.xml",
 							"bstore");
 					VerticalLayout doc3 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+							"prices.xml",
 							"prices");
 					documents.addTab(doc1, "mylist", null);
 					documents.addTab(doc2, "bstore", null);
@@ -664,18 +686,18 @@ public class MyUI extends UI {
 				;
 				if (event.getValue().equals("Example 5")) {
 					String p = load(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\lightest-results-first.xq");
+							"lightest-results-first.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
 					documents.removeAllComponents();
 					VerticalLayout doc1 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+							"mylist.xml",
 							"mylist");
 					VerticalLayout doc2 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+							"bstore.xml",
 							"bstore");
 					VerticalLayout doc3 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+							"prices.xml",
 							"prices");
 					documents.addTab(doc1, "mylist", null);
 					documents.addTab(doc2, "bstore", null);
@@ -684,18 +706,18 @@ public class MyUI extends UI {
 				;
 				if (event.getValue().equals("Example 6")) {
 					String p = load(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\divide-query.xq");
+							"divide-query.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
 					documents.removeAllComponents();
 					VerticalLayout doc1 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+							"mylist.xml",
 							"mylist");
 					VerticalLayout doc2 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+							"bstore.xml",
 							"bstore");
 					VerticalLayout doc3 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+							"prices.xml",
 							"prices");
 					documents.addTab(doc1, "mylist", null);
 					documents.addTab(doc2, "bstore", null);
@@ -704,18 +726,18 @@ public class MyUI extends UI {
 				;
 				if (event.getValue().equals("Example 7")) {
 					String p = load(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\only-functions.xq");
+							"only-functions.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
 					documents.removeAllComponents();
 					VerticalLayout doc1 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\pet.xml",
+							"pet.xml",
 							"mylist");
 					VerticalLayout doc2 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\petOwner.xml",
+							"petOwner.xml",
 							"bstore");
 					VerticalLayout doc3 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\owner.xml",
+							"owner.xml",
 							"prices");
 					documents.addTab(doc1, "pet", null);
 					documents.addTab(doc2, "petOwner", null);
@@ -724,18 +746,18 @@ public class MyUI extends UI {
 				;
 				if (event.getValue().equals("Example 8")) {
 					String p = load(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\heaviest-paths-first.xq");
+							"heaviest-paths-first.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
 					documents.removeAllComponents();
 					VerticalLayout doc1 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+							"mylist.xml",
 							"mylist");
 					VerticalLayout doc2 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+							"bstore.xml",
 							"bstore");
 					VerticalLayout doc3 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+							"prices.xml",
 							"prices");
 					documents.addTab(doc1, "mylist", null);
 					documents.addTab(doc2, "bstore", null);
@@ -744,18 +766,18 @@ public class MyUI extends UI {
 				;
 				if (event.getValue().equals("Example 9")) {
 					String p = load(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\heaviest-functions-first.xq");
+							"heaviest-functions-first.xq");
 					editor.setValue(p);
 					documents.removeAllComponents();
 					documents.removeAllComponents();
 					VerticalLayout doc1 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml",
+							"mylist.xml",
 							"mylist");
 					VerticalLayout doc2 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml",
+							"bstore.xml",
 							"bstore");
 					VerticalLayout doc3 = DocPanel(
-							"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml",
+							"prices.xml",
 							"prices");
 					documents.addTab(doc1, "mylist", null);
 					documents.addTab(doc2, "bstore", null);
@@ -879,7 +901,7 @@ public class MyUI extends UI {
 
 						try (BaseXClient session = new BaseXClient("localhost", 1984, "admin", "admin")) {
 							String ctree = load(
-									"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\ctree.xq");
+									"ctree.xq");
 
 							try (Query query = session
 									.query(ctree + "\n" + "<root>{local:treecalls(" + strategycode.getValue() + ",\""

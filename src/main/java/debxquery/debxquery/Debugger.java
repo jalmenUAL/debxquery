@@ -1,7 +1,6 @@
 package debxquery.debxquery;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -14,45 +13,41 @@ import trash.BaseXClient;
 import trash.BaseXClient.Query;
 
 public class Debugger {
-	
-	public static String load (String filename)
-	{
-	String fileAsString = "";
-	InputStream is;
-	try {
-		is = new FileInputStream(filename);
-	
-	BufferedReader buf = new BufferedReader(new InputStreamReader(is));
-	        
-	String line;
-	try {
-		line = buf.readLine();
-		StringBuilder sb = new StringBuilder();
-		
-		while(line != null){
-			   sb.append(line).append("\n");
-			   line = buf.readLine();
+
+	public static String load(String filename) {
+		String fileAsString = "";
+		InputStream is;
+		try {
+			is = new FileInputStream(filename);
+
+			BufferedReader buf = new BufferedReader(new InputStreamReader(is));
+
+			String line;
+			try {
+				line = buf.readLine();
+				StringBuilder sb = new StringBuilder();
+
+				while (line != null) {
+					sb.append(line).append("\n");
+					line = buf.readLine();
+				}
+				buf.close();
+				fileAsString = sb.toString();
+				// System.out.println("Contents : " + fileAsString);
+
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-		buf.close();	        
-		    fileAsString = sb.toString();
-			//System.out.println("Contents : " + fileAsString);
-			
-			
-	} catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-	
-		
-	} catch (FileNotFoundException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-	
-	return fileAsString;
+
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return fileAsString;
 	}
 
-	 
 	public static void main(final String... args) throws IOException {
 
 		String b1store = "<bib>\r\n" + "    <book year=\"1994\">\r\n" + "        <title>TCP/IP Illustrated</title>\r\n"
@@ -291,271 +286,231 @@ public class Debugger {
 				+ "      $first :=  ($proc//incision)[1],\r\n" + "      $second:=  ($proc//incision)[2]\r\n"
 				+ "  return local:between($proc//node(), $first, $second)\r\n" + " }\r\n" + "</critical_sequence>";
 
-		
-		String running = "declare function local:min($t)\r\n" + 
-				"{\r\n" + 
-				"   let $prices := db:open('prices')\r\n" + 
-				"   let $p := $prices/prices/book[title = $t]/price\r\n" + 
-				"   return min($p)\r\n" + 
-				"};\r\n" + 
-				"\r\n" + 
-				"declare function local:store($t,$p)\r\n" + 
-				"{\r\n" + 
-				"   let $prices := db:open('prices')\r\n" + 
-				"   let $p := $prices/prices/book[title = $t and price=$p]\r\n" + 
-				"   return $p/source\r\n" + 
-				"};\r\n" + 
-				"\r\n" + 
-				"declare function local:min_price($t)\r\n" + 
-				"{\r\n" + 
-				"    let $min := local:min($t)\r\n" + 
-				"    return\r\n" + 
-				"    <minprice title='{$t}'>\r\n" + 
-				"     {local:store($t,$min)}\r\n" + 
-				"     <price>{local:min($t)}</price>\r\n" + 
-				"    </minprice>\r\n" + 
-				"};\r\n" + 
-				"\r\n" + 
-				"declare function local:rate($rates)\r\n" + 
-				"{\r\n" + 
-				" let $n := count($rates)\r\n" + 
-				" return sum($rates)" + 
-				"};\r\n" + 
-				"\r\n" + 
-				"declare function local:data($t)\r\n" + 
-				"{\r\n" + 
-				" for $b in db:open('bstore')/bstore/book[title=$t]\r\n" + 
-				" let $mr := local:rate($b/rate)\r\n" + 
-				" where $mr > 5\r\n" + 
-				" return\r\n" + 
-				" if ($b[editor]) then ($b/editor,$b/publisher,<mrate>{$mr}</mrate>)\r\n" + 
-				" else\r\n" + 
-				" ($b/author[position()<=1],$b/publisher,<mrate>{$mr}</mrate>)\r\n" + 
-				"};\r\n" + 
-				"\r\n" + 
-				"<bib>\r\n" + 
-				"{\r\n" + 
-				"let $mylist := db:open('mylist')\r\n" + 
-				"for $t in distinct-values($mylist/mylist/title)\r\n" + 
-				"let $d := local:data($t)\r\n" + 
-				"where exists($d)\r\n" + 
-				"return\r\n" + 
-				"<book>{\r\n" + 
-				"$d,local:min_price($t)\r\n" + 
-				"}\r\n" + 
-				"</book>\r\n" + 
-				"}\r\n" + 
-				"</bib>     ";
-		
+		String running = "declare function local:min($t)\r\n" + "{\r\n" + "   let $prices := db:open('prices')\r\n"
+				+ "   let $p := $prices/prices/book[title = $t]/price\r\n" + "   return min($p)\r\n" + "};\r\n" + "\r\n"
+				+ "declare function local:store($t,$p)\r\n" + "{\r\n" + "   let $prices := db:open('prices')\r\n"
+				+ "   let $p := $prices/prices/book[title = $t and price=$p]\r\n" + "   return $p/source\r\n" + "};\r\n"
+				+ "\r\n" + "declare function local:min_price($t)\r\n" + "{\r\n" + "    let $min := local:min($t)\r\n"
+				+ "    return\r\n" + "    <minprice title='{$t}'>\r\n" + "     {local:store($t,$min)}\r\n"
+				+ "     <price>{local:min($t)}</price>\r\n" + "    </minprice>\r\n" + "};\r\n" + "\r\n"
+				+ "declare function local:rate($rates)\r\n" + "{\r\n" + " let $n := count($rates)\r\n"
+				+ " return sum($rates)" + "};\r\n" + "\r\n" + "declare function local:data($t)\r\n" + "{\r\n"
+				+ " for $b in db:open('bstore')/bstore/book[title=$t]\r\n" + " let $mr := local:rate($b/rate)\r\n"
+				+ " where $mr > 5\r\n" + " return\r\n"
+				+ " if ($b[editor]) then ($b/editor,$b/publisher,<mrate>{$mr}</mrate>)\r\n" + " else\r\n"
+				+ " ($b/author[position()<=1],$b/publisher,<mrate>{$mr}</mrate>)\r\n" + "};\r\n" + "\r\n" + "<bib>\r\n"
+				+ "{\r\n" + "let $mylist := db:open('mylist')\r\n"
+				+ "for $t in distinct-values($mylist/mylist/title)\r\n" + "let $d := local:data($t)\r\n"
+				+ "where exists($d)\r\n" + "return\r\n" + "<book>{\r\n" + "$d,local:min_price($t)\r\n" + "}\r\n"
+				+ "</book>\r\n" + "}\r\n" + "</bib>     ";
+
 		// create session
 		try (BaseXClient session = new BaseXClient("localhost", 1984, "admin", "admin")) {
 
-		    File initialFile2 = new File("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml");
-		    InputStream mylist = new FileInputStream(initialFile2);
-		    
-		    File initialFile3 = new File("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml");
-		    InputStream bstore = new FileInputStream(initialFile3);
-		    
-		    File initialFile4 = new File("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml");
-		    InputStream pricesf = new FileInputStream(initialFile4);
-		    
-		    //final InputStream b1st = new ByteArrayInputStream(b1store.getBytes());
-			//final InputStream b2st = new ByteArrayInputStream(b2store.getBytes());
-			//final InputStream bookt = new ByteArrayInputStream(books.getBytes());
-			//final InputStream reportt = new ByteArrayInputStream(report.getBytes());
-			
+			File initialFile2 = new File(
+					"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\mylist.xml");
+			InputStream mylist = new FileInputStream(initialFile2);
+
+			File initialFile3 = new File(
+					"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\bstore.xml");
+			InputStream bstore = new FileInputStream(initialFile3);
+
+			File initialFile4 = new File(
+					"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\prices.xml");
+			InputStream pricesf = new FileInputStream(initialFile4);
+
+			// final InputStream b1st = new ByteArrayInputStream(b1store.getBytes());
+			// final InputStream b2st = new ByteArrayInputStream(b2store.getBytes());
+			// final InputStream bookt = new ByteArrayInputStream(books.getBytes());
+			// final InputStream reportt = new ByteArrayInputStream(report.getBytes());
+
 			session.execute("drop db mylist");
 			session.execute("drop db prices");
 			session.execute("drop db bstore");
-			//session.execute("drop db bstore1");
-			//session.execute("drop db bstore2");
-			//session.execute("drop db book");
-			//session.execute("drop db report");
+			// session.execute("drop db bstore1");
+			// session.execute("drop db bstore2");
+			// session.execute("drop db book");
+			// session.execute("drop db report");
 
 			session.create("mylist", mylist);
 			session.create("bstore", bstore);
 			session.create("prices", pricesf);
-			//session.create("bstore1", b1st);
-			//session.create("bstore2", b2st);
-			//session.create("book", bookt);
-			//session.create("report", reportt);
+			// session.create("bstore1", b1st);
+			// session.create("bstore2", b2st);
+			// session.create("book", bookt);
+			// session.create("report", reportt);
 
-			
-			
-			String ctree = load("C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\ctree.xq");
+			String ctree = load(
+					"C:\\Users\\Administrator\\eclipse-workspace\\debxquery\\src\\main\\webapp\\VAADIN\\themes\\mytheme\\ctree.xq");
 
-			String input = ctree+"\n"
-			+"<root>{local:treecalls("+"function($x){$x}"+","+"\""+running+"\""+")}</root>/node()";
-			 
-			try (Query query = session.query(input)) {		 
-				 
-				String option ="Y";
-				while (query.more() && option.equals("Y")) {				
-					String next = query.next();		
-					option = explore(session,next); 
-				}		 
-				if (option.equals("Y")) {System.out.println("No more nodes can be analyzed");}
+			String input = ctree + "\n" + "<root>{local:treecalls(" + "function($x){$x}" + "," + "\"" + running + "\""
+					+ ")}</root>/node()";
+
+			try (Query query = session.query(input)) {
+
+				String option = "Y";
+				while (query.more() && option.equals("Y")) {
+					String next = query.next();
+					option = explore(session, next);
+				}
+				if (option.equals("Y")) {
+					System.out.println("No more nodes can be analyzed");
+				}
 				System.out.println(query.info());
 			}
-			
-			 //session.execute("drop db bstore1");
-			 //session.execute("drop db bstore2");
-			 //session.execute("drop db book");
-			 //session.execute("drop db report");
-			 session.execute("drop db mylist");
-			 session.execute("drop db bstore");
-			 session.execute("drop db prices");
-		}
-		}
-	
 
-	
-	public static String explore(BaseXClient session,String next)
-	{  
-		Scanner scanner = new Scanner(System. in);
-		
+			// session.execute("drop db bstore1");
+			// session.execute("drop db bstore2");
+			// session.execute("drop db book");
+			// session.execute("drop db report");
+			session.execute("drop db mylist");
+			session.execute("drop db bstore");
+			session.execute("drop db prices");
+		}
+	}
+
+	public static String explore(BaseXClient session, String next) {
+		Scanner scanner = new Scanner(System.in);
+
 		Boolean path = false;
 		String questionp = "let $x:=" + next + "return $x/p";
 		Query qp;
 		try {
 			qp = session.query(questionp);
-			if (qp.more()) {path = true;}
-		}
-	    catch (IOException e) {
-		e.printStackTrace();
-	    }
-		
-		if (path)
-		{
-		
-		System.out.print("Can be ");
-		String question = "let $x:=" + next + "return $x/p/node()";
-		
-		String option = "Y";
-		try {
-			Query qsc;
-			qsc = session.query(question);
-			String pathq = "";
-			 
-			while(qsc.more()) {
-				 
-				String qnext = qsc.next();
-				pathq = qnext;
-				System.out.println(qnext);
-				
+			if (qp.more()) {
+				path = true;
 			}
-		
-			
-			String values = "let $x:=" + next + "return $x/values/node()";
-			System.out.print(" equal to ");
-			Query qvalues = session.query(values);
-			Boolean empty = true;
-			while(qvalues.more()) {
-			    String nvalues = qvalues.next();
-			    System.out.print(nvalues);		
-			    empty = false;
-			}
-			if (empty) System.out.println("()");
-			System.out.println("?");
-			System.out.println("Question (Y/N):");	
-			option  = scanner.nextLine();  
-		    if (option.equals("N")) {	
-		        	String questionch = "let $x:=" + next + "return $x/question";
-		        	Query qch;
-		    		try {
-		    			qch = session.query(questionch);
-		    			String optionch ="Y";
-		    			while(qch.more() && optionch.equals("Y")) {
-		    				 String ch = qch.next();
-		    				 optionch = explore(session,ch);
-		    				 
-		    			}
-		    			if (optionch.equals("Y")) {				 
-		    				System.out.println("Error in "+pathq);
-		    			}
-		    			
-		    		} catch (IOException e) {
-		    			e.printStackTrace();
-		    		}
-		    		
-		    		return option;
-		        } else  return option;
-		    
-		    
-		    
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return option;
-		
-		} else 
-			
-		{
+
+		if (path) {
+
 			System.out.print("Can be ");
-			String question = "let $x:=" + next + "return $x/sf/node()/node()";
-			
+			String question = "let $x:=" + next + "return $x/p/node()";
+
 			String option = "Y";
 			try {
 				Query qsc;
 				qsc = session.query(question);
-				 
-				qsc.more();
-				String fun = qsc.next();
-				
-				
-				//qsc.more();
-				//String args = qsc.next(); 
-				
-				System.out.println("This function call: "+fun);	 
-				System.out.println("with arguments: ");
-				while(qsc.more()) {
-				    String arg = qsc.next();
-					System.out.print(arg);		
+				String pathq = "";
+
+				while (qsc.more()) {
+
+					String qnext = qsc.next();
+					pathq = qnext;
+					System.out.println(qnext);
+
 				}
-				
+
 				String values = "let $x:=" + next + "return $x/values/node()";
 				System.out.print(" equal to ");
 				Query qvalues = session.query(values);
 				Boolean empty = true;
-				while(qvalues.more()) {
-				    String nvalues = qvalues.next();
-				    empty = false;
-					System.out.print(nvalues);		
+				while (qvalues.more()) {
+					String nvalues = qvalues.next();
+					System.out.print(nvalues);
+					empty = false;
 				}
-				if (empty) System.out.println("()");
+				if (empty)
+					System.out.println("()");
 				System.out.println("?");
-				System.out.println("Question (Y/N):");	
-				option  = scanner.nextLine();  
-			    if (option.equals("N")) {	
-			        	String questionch = "let $x:=" + next + "return $x/question";
-			        	Query qch;
-			    		try {
-			    			qch = session.query(questionch);
-			    			String optionch ="Y";
-			    			while(qch.more() && optionch.equals("Y")) {
-			    				 String ch = qch.next();
-			    				 optionch = explore(session,ch);
-			    				 
-			    			}
-			    			if (optionch.equals("Y")) {				 
-			    				System.out.println("Error in "+fun);
-			    			}
-			    			
-			    		} catch (IOException e) {
-			    			e.printStackTrace();
-			    		}
-			    		
-			    		return option;
-			        } else  return option;
-			    
-			    
-			    
+				System.out.println("Question (Y/N):");
+				option = scanner.nextLine();
+				if (option.equals("N")) {
+					String questionch = "let $x:=" + next + "return $x/question";
+					Query qch;
+					try {
+						qch = session.query(questionch);
+						String optionch = "Y";
+						while (qch.more() && optionch.equals("Y")) {
+							String ch = qch.next();
+							optionch = explore(session, ch);
+
+						}
+						if (optionch.equals("Y")) {
+							System.out.println("Error in " + pathq);
+						}
+
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+
+					return option;
+				} else
+					return option;
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return option;
+
+		} else
+
+		{
+			System.out.print("Can be ");
+			String question = "let $x:=" + next + "return $x/sf/node()/node()";
+
+			String option = "Y";
+			try {
+				Query qsc;
+				qsc = session.query(question);
+
+				qsc.more();
+				String fun = qsc.next();
+
+				 
+
+				System.out.println("This function call: " + fun);
+				System.out.println("with arguments: ");
+				while (qsc.more()) {
+					String arg = qsc.next();
+					System.out.print(arg);
+				}
+
+				String values = "let $x:=" + next + "return $x/values/node()";
+				System.out.print(" equal to ");
+				Query qvalues = session.query(values);
+				Boolean empty = true;
+				while (qvalues.more()) {
+					String nvalues = qvalues.next();
+					empty = false;
+					System.out.print(nvalues);
+				}
+				if (empty)
+					System.out.println("()");
+				System.out.println("?");
+				System.out.println("Question (Y/N):");
+				option = scanner.nextLine();
+				if (option.equals("N")) {
+					String questionch = "let $x:=" + next + "return $x/question";
+					Query qch;
+					try {
+						qch = session.query(questionch);
+						String optionch = "Y";
+						while (qch.more() && optionch.equals("Y")) {
+							String ch = qch.next();
+							optionch = explore(session, ch);
+
+						}
+						if (optionch.equals("Y")) {
+							System.out.println("Error in " + fun);
+						}
+
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+
+					return option;
+				} else
+					return option;
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			return option;
 		}
-		 
+
 	}
-	
+
 }
