@@ -5,29 +5,35 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.ProgressBar;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
+import com.vaadin.ui.themes.ValoTheme;
 
 public class LoadingIndicatorWindow extends Window {
 
-public LoadingIndicatorWindow() {
+public LoadingIndicatorWindow(String text) {
+	
+	 
     center();
     setVisible(true);
     setResizable(false);
     setDraggable(false);
     setModal(true);
     setClosable(false);
-    setCaption("Loading");
-
+    setCaption("Loading...");
+     
     VerticalLayout layout = new VerticalLayout();
     layout.setMargin(true);
     layout.setWidth("100%");
 
-    Label progressLabel = new Label("Please wait! Data loading in progress...");
+    Label progressLabel = new Label(text);
     progressLabel.setSizeFull();
+    progressLabel.setStyleName(ValoTheme.LABEL_LARGE);
 
     ProgressBar progressBar = new ProgressBar();
     progressBar.setSizeFull();
     progressBar.setIndeterminate(true);
     progressBar.setVisible(true);
+    progressBar.setStyleName(ValoTheme.PROGRESSBAR_POINT);
+    
 
     layout.addComponent(progressLabel);
     layout.addComponent(progressBar);
@@ -35,5 +41,6 @@ public LoadingIndicatorWindow() {
     layout.setComponentAlignment(progressLabel, Alignment.MIDDLE_CENTER);
     layout.setComponentAlignment(progressBar, Alignment.MIDDLE_CENTER);
     setContent(layout);
-}
+	}
+
 }
