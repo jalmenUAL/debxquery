@@ -363,7 +363,7 @@ public class MyUI extends UI {
 		ComboBox<String> queries = new ComboBox<String>("Examples of Queries");
 		ComboBox<String> strategies = new ComboBox<String>("Strategies");
 
-		load_url("http://minerva.ual.es:8080/debxquery/bstore1.xml","bstore1.xml");
+		
 		VerticalLayout firstdocument = DocPanel(
 				"bstore1.xml",
 				"bstore1");
@@ -444,7 +444,7 @@ public class MyUI extends UI {
 		String input = load(
 				"q1.xq");
 		editor.setValue(input);
-		editor.setValue(input);
+		 
 
 		AceEditor resulte = new AceEditor();
 		resulte.setHeight("300px");
