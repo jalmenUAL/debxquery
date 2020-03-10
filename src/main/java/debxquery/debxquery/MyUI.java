@@ -444,6 +444,7 @@ public class MyUI extends UI {
 		String input = load(
 				"q1.xq");
 		editor.setValue(input);
+		editor.setValue(input);
 
 		AceEditor resulte = new AceEditor();
 		resulte.setHeight("300px");
