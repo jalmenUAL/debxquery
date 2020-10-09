@@ -269,7 +269,9 @@ public class MyUI extends UI {
 
 	public VerticalLayout DocPanel(String file, String database) {
 
-		load_url("http://minerva.ual.es:8080/debxquery/"+file,file);
+		if (file.equals("empty")) {file="";}
+		else
+		{load_url("http://minerva.ual.es:8080/debxquery/"+file,file);}
 		VerticalLayout firstdocument = new VerticalLayout();
 		HorizontalLayout dbl = new HorizontalLayout();
 		dbl.setWidth("100%");
@@ -307,7 +309,7 @@ public class MyUI extends UI {
 			@Override
 			public void buttonClick(ClickEvent event) {
 
-				if (name.getValue().equals("bstore1") || name.getValue().equals("bstore") ||
+				if (name.getValue().equals("") || name.getValue().equals("bstore1") || name.getValue().equals("bstore") ||
 
 						name.getValue().equals("pet") || name.getValue().equals("owner")
 						|| name.getValue().equals("petOwner") || name.getValue().equals("mylist")
@@ -315,12 +317,19 @@ public class MyUI extends UI {
 					error("Forbidden Operation", "This database name is not allowed. Please rename.");
 				} else {
 					try (BaseXClient session = new BaseXClient("localhost", 1984, "admin", "admin")) {
+						if (xmldoc.getValue().isEmpty())
+						{
+							error("Error","The document cannot be emty.");
+						}
+						else
+						{
 						session.execute("drop db " + name.getValue());
 						final InputStream code = new ByteArrayInputStream(xmldoc.getValue().getBytes());
 						session.create(name.getValue(), code);
 						Tab selectedTab = documents.getTab(documents.getSelectedTab());
 						selectedTab.setCaption(name.getValue());
 						print("Successful Operation", "Database has been saved");
+						}
 					} catch (IOException e) {
 						error("Error", e.getMessage());
 					}
@@ -332,6 +341,10 @@ public class MyUI extends UI {
 		if (!file.equals("")) {
 			String db = load(file);
 			xmldoc.setValue(db);
+			firstdocument.setCaption(database);
+		}
+		else {
+			xmldoc.setValue("");
 			firstdocument.setCaption(database);
 		}
 		firstdocument.addComponent(dbl);
@@ -365,10 +378,10 @@ public class MyUI extends UI {
 
 		
 		VerticalLayout firstdocument = DocPanel(
-				"bstore1.xml",
-				"bstore1");
+				"empty",
+				"New");
 		VerticalLayout seconddocument = DocPanel("", "");
-		documents.addTab(firstdocument, "bstore1", null);
+		documents.addTab(firstdocument, "New", null);
 		documents.addTab(seconddocument, "+");
 
 		documents.addSelectedTabChangeListener(new SelectedTabChangeListener() {
@@ -388,12 +401,12 @@ public class MyUI extends UI {
 				}
 			}
 		});
-		queries.setItems("Example 1-Bug 1", "Example 1-Bug 2", "Example 1-Bug 3", "Example 1-Bug 4", "Example 1-Bug 5",
+		queries.setItems("New Query","Example 1-Bug 1", "Example 1-Bug 2", "Example 1-Bug 3", "Example 1-Bug 4", "Example 1-Bug 5",
 				"Example 1-Bug 6", "Example 2", "Example 3", "Example 4", "Example 5", "Example 6", "Example 7",
 				"Example 8", "Example 9");
 		queries.setEmptySelectionCaption("Please select a query:");
 		queries.setWidth("100%");
-		queries.setPageLength(15);
+		queries.setPageLength(16);
 
 		strategies.setItems("Naive", "Paths First", "Functions First", "Only Functions", "Heaviest First",
 				"Lightest Results First", "Divide and Query", "Heaviest Paths First", "Heaviest Functions First");
@@ -439,13 +452,7 @@ public class MyUI extends UI {
 		editor.setUseSoftTabs(false);
 		editor.setShowPrintMargin(false);
 		editor.setWordWrap(true);
-
-		
-		String input = load(
-				"q1.xq");
-		editor.setValue(input);
 		 
-
 		AceEditor resulte = new AceEditor();
 		resulte.setHeight("300px");
 		resulte.setWidth("100%");
@@ -499,6 +506,23 @@ public class MyUI extends UI {
 			if (event.getSource().isEmpty()) {
 				error("", "Empty Selection. Please select a query.");
 			} else {
+				
+				if (event.getValue().equals("New Query")) {
+					
+					editor.setValue("");
+					documents.removeAllComponents();
+					documents.removeAllComponents();
+					VerticalLayout fdoc = DocPanel(
+							"empty",
+							"New");
+					VerticalLayout sdoc = DocPanel("", "");
+					documents.addTab(fdoc, "New", null);
+					documents.addTab(sdoc, "+");
+					
+
+				}
+				;
+				
 				if (event.getValue().equals("Example 1-Bug 1")) {
 					String p = load(
 							"example1-bug1.xq");
