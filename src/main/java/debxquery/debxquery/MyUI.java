@@ -73,6 +73,9 @@ public class MyUI extends UI {
 
 	public String load(String filename) {
 		
+		
+		/*CHANGES*/
+		
 		load_url("http://minerva.ual.es:8080/debxquery/"+filename,filename);
 		String fileAsString = "";
 		InputStream is;
